@@ -4,7 +4,7 @@ import requests
 def get_repos(username):
     #headers required to make requests to Github API
     headers = {
-        'Authorization': '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', #Everyone has there own Github PAT
+        'Authorization': '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', #Everyone has there own Github PAT
         'User-Agent': 'Open-Source-Repo-Recommender',
         'Accept': 'application/vnd.github.json', # Github mediatype, the format data is returned
     }
@@ -18,8 +18,9 @@ def get_repos(username):
     
     try:
         # the request is sent to the below URL and returned data is stored in .json
-        repos = requests.get(f'https:/api.github.com/users/{username}/repos',headers=headers)
-        repos_data = repos.json
+        url = f'https://api.github.com/users/{username}/repos'
+        repos = requests.get(url,headers=headers)
+        repos_data = repos.json()
 
         # iterates through every repository of the user data
         for repo in repos_data:
@@ -29,7 +30,7 @@ def get_repos(username):
 
                 # If the conditioned is satisfied, makes a request for languages 
                 languages = requests.get(repo['languages_url'],headers=headers)
-                languages_data = languages.json
+                languages_data = languages.json()
 
                 # To store the user repositories name and the descripton
                 user_repo = {
