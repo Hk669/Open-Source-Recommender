@@ -2,6 +2,7 @@ import streamlit as st
 from user_data import get_repos
 from db import recommend
 import asyncio
+from search import get_projects
 from linkpreview import link_preview
 
 
@@ -28,7 +29,7 @@ if prompt:
 
     status_placeholder.empty()
 
-    with st.expander("Recommended Projects"):
+    with st.expander("Recommended Repositories"):
         for url in urls:
             if url:
                 title, description, image = get_link_preview(url)
