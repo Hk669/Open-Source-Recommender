@@ -1,7 +1,8 @@
 # Open-Source-Recommender
+As a developer👨‍💻, I faced many problems in finding open-source projects🤷‍♂️. Don't worry! I brought you guys an application to find your open-source project by just typing in your GitHub username.✌️
 The application recommends Open Source Repositories based on your interests and languages that interest you.
 
-## Features
+## Features🤖
 
 - Retrieves repository details of a GitHub user, including project names, descriptions, programming languages, and topics.
 - Searches and gathers open source projects based on user language and topic interests using the GitHub API.
