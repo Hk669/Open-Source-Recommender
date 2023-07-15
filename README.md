@@ -9,6 +9,14 @@ The application recommends Open Source Repositories based on your interests and 
 - Generates recommendations by comparing user repository details with the collected open-source projects.
 - Provides a web interface using Streamlit to input user information and display recommended projects with link previews.
 
+
+
+
+https://github.com/Hk669/Open-Source-Recommender/assets/96101829/fa8d13fc-32f9-4c43-8cc5-3dae5312af2d
+
+
+
+
 ## Installation
 
 1. Clone the repository:
