@@ -18,7 +18,7 @@ def recommend(user_details, repos):
         # add the data to the DB
         collection.add(
             documents = [document],
-            ids = [projects['full_name']],
+            ids = [project['full_name']],
         )
 
     for user_proj in user_details:

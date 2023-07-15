@@ -4,7 +4,7 @@ import requests
 def get_repos(username):
     #headers required to make requests to Github API
     headers = {
-        'Authorization': 'ACCESS_TOKEN', #Enter your Github PAT
+        'Authorization': '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', #Enter your Github PAT
         'User-Agent': 'Open-Source-Repo-Recommender',
         'Accept': 'application/vnd.github.json', # Github mediatype, the format data is returned
     }
@@ -42,7 +42,7 @@ def get_repos(username):
                 languages_set.update(languages_data.keys())
                 topics_set.update(repo['topics'])
 
-        language_topics = {"language" : list(languages_set), "topics" : list(topics_set)}
+        language_topics = {"languages" : list(languages_set), "topics" : list(topics_set)}
 
     except Exception as e:
         print(e)

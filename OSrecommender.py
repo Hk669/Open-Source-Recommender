@@ -18,10 +18,10 @@ prompt = st.text_input("Enter your Github username..")
 if prompt:
     status_placeholder = st.empty()
     status_placeholder.text('Crawling your repositories...')
-    user_details, languages_topics = get_repos(prompt)
+    user_details, language_topics = get_repos(prompt)
 
     status_placeholder.text('Crawling open source projects...')
-    unique_repos = asyncio.run(get_projects(languages_topics))
+    unique_repos = asyncio.run(get_projects(language_topics))
 
     status_placeholder.text('Generating recommendations...')
 
