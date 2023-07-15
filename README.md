@@ -36,6 +36,8 @@ https://github.com/Hk669/Open-Source-Recommender/assets/96101829/fa8d13fc-32f9-4
    - Visit https://github.com/settings/tokens and generate a new token with the necessary permissions.
    - Copy the token and update the `ACCESS_TOKEN` variable in the `user.py` file with your token.
 
+## Contributions
+- Contributions to the Open Source recommender project are welcome. If you find any bugs, have suggestions for improvements, or want to add new features, please submit an issue or create a pull request.
 
 ## License
 
