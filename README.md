@@ -12,7 +12,9 @@ The application recommends Open Source Repositories based on your interests and 
 
 
 
-https://github.com/Hk669/Open-Source-Recommender/assets/96101829/fa8d13fc-32f9-4c43-8cc5-3dae5312af2d
+https://github.com/Hk669/Open-Source-Recommender/assets/96101829/eb45c74f-82ee-4c61-91f5-468d352084d8
+
+
 
 
 
