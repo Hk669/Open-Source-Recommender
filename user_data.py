@@ -4,7 +4,7 @@ import requests
 def get_repos(username):
     #headers required to make requests to Github API
     headers = {
-        'Authorization': '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', #Enter your Github PAT
+        'Authorization': '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', #Enter your Github PAT
         'User-Agent': 'Open-Source-Repo-Recommender',
         'Accept': 'application/vnd.github.json', # Github mediatype, the format data is returned
     }

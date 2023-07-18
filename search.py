@@ -10,7 +10,7 @@ class Octokit:
 
     async def request(self, method, url, params=None):
         headers = {
-            'Authorization': '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 ' + self.auth,
+            'Authorization': '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 ' + self.auth,
             'Accept': 'application/vnd.github+json',
         }
 
@@ -48,7 +48,7 @@ async def main(language_topics):
     unique_repos = {}
 
     async with ClientSession() as session:
-        octokit = Octokit('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', session)
+        octokit = Octokit('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', session)
 
         languages = language_topics['languages']
         topics = language_topics['topics']
@@ -95,23 +95,25 @@ async def main(language_topics):
 
     return unique_repos
 
-# Define the get_projects function
+
 async def get_projects(language_topics):
     return await main(language_topics)
 
 
-# Usage example
-language_topics = {
-    'languages': ['python', 'javascript'],
-    'topics': ['machine-learning', 'web-development']
-}
 
-# Call the get_projects function to retrieve the repositories
-result = asyncio.run(get_projects(language_topics))
+def run_event_loop():
+    language_topics = {
+        'languages': ['python', 'javascript'],
+        'topics': ['machine-learning', 'web-development']
+    }
 
-# Print the retrieved repositories
-for repo_id, repo_info in result.items():
-    print(f"Repository ID: {repo_id}")
-    print(f"Full Name: {repo_info['full_name']}")
-    print(f"Description: {repo_info['description']}")
-    print("---------------------------")
+    loop = asyncio.get_event_loop()
+    result = loop.run_until_complete(get_projects(language_topics))
+    loop.close()
+
+
+    for repo_id, repo_info in result.items():
+        print(f"Repository ID: {repo_id}")
+        print(f"Full Name: {repo_info['full_name']}")
+        print(f"Description: {repo_info['description']}")
+        print("---------------------------")
