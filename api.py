@@ -23,13 +23,15 @@ async def get_recommendations(request : Recommendation):
     username = request.username
 
     try:
-        user_details, language_topics =await get_repos(username)
+        user_details, language_topics = get_repos(username)
         unique_repos =await get_projects(language_topics)
 
         urls = recommend(user_details,unique_repos)
         return {'recommendations': urls}
     except Exception as e:
+        print(e)
         raise HTTPException(status_code=500, detail = 'Error generating recommendatoins')
+        
 
 async def main():
     uvicorn.run(app,host='127.0.0.1',port=8000)
