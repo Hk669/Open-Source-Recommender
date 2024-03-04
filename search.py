@@ -10,7 +10,7 @@ class Octokit:
 
     async def request(self, method, url, params=None):
         headers = {
-            'Authorization': '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 ' + self.auth,
+            'Authorization': 'BEARER ' + self.auth,
             'Accept': 'application/vnd.github+json',
         }
 
