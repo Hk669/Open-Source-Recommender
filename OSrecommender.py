@@ -1,8 +1,8 @@
 import streamlit as st
-from user_data import get_repos
-from db import recommend
+from src.user_data import get_repos
+from chroma.db import recommend
 import asyncio
-from search import get_projects
+from src.search import get_projects
 from linkpreview import link_preview
 
 
@@ -18,7 +18,7 @@ prompt = st.text_input("Enter your Github username..")
 if prompt:
     status_placeholder = st.empty()
     status_placeholder.text('Crawling your repositories...')
-    user_details, language_topics = get_repos(prompt)
+    user_details, language_topics = asyncio.run(get_repos(prompt))
 
     status_placeholder.text('Crawling open source projects...')
     unique_repos = asyncio.run(get_projects(language_topics))
