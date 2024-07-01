@@ -10,6 +10,9 @@ load_dotenv()
 GPAT = os.getenv('GPAT')
 
 async def get_repos(username: str):
+    """
+    Fetches the repositories of the user
+    """
     user_details = []
     language_topics = {}
     
@@ -17,9 +20,9 @@ async def get_repos(username: str):
         async with ClientSession() as session:
             octokit = Octokit(GPAT, session)
 
-        # To store the unique data of the user 
-            languages_set = set()
-            topics_set = set()
+            # To store the unique data of the user 
+            languages_map = {} # store the freq of the languages
+            topics_map = {}
 
             url = f'/users/{username}/repos'
             repos_data = await octokit.request('GET', url)
@@ -36,10 +39,16 @@ async def get_repos(username: str):
                     }
                     user_details.append(user_repo)
 
-                    languages_set.update(languages_data.keys())
-                    topics_set.update(repo['topics'])
+                    for lang in languages_data.keys():
+                        languages_map[lang] = languages_map.get(lang, 0) + 1
 
-            language_topics = {"languages" : list(languages_set), "topics" : list(topics_set)}
+                    for topic in repo['topics']:
+                        topics_map[topic] = topics_map.get(topic, 0) + 1
+
+            # return the top5 languages
+            top5_languages = sorted(languages_map, key=languages_map.get, reverse=True)[:5]
+            top_topics = sorted(topics_map, key=topics_map.get, reverse=True)[:7]
+            language_topics = {"languages" : list(top5_languages), "topics" : list(top_topics)}
 
     except aiohttp.ClientError as e:
         print(f"Error fetching data: {e}")

@@ -64,11 +64,12 @@ async def main(language_topics):
         tasks = []
 
         for language in languages:
+            print(f"Searching for {language} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 100,
+                'per_page': 30,
                 'page': 1,
             }
 
@@ -81,11 +82,12 @@ async def main(language_topics):
             tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
 
         for topic in topics:
+            print(f"Searching for {topic} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 100,
+                'per_page': 30,
                 'page': 1,
             }
 
@@ -101,19 +103,22 @@ async def main(language_topics):
         for result in results:
             unique_repos.update(result)
     
-
+    print(f"Found {len(unique_repos)} unique repositories")
     return unique_repos
 
 
 if __name__ == '__main__':
-    language_topics = {
-        'languages': ['python'],
-        'topics': ['ai', 'web-development']
-    }
+    language_topics = {'languages': ['Jupyter Notebook', 'Python', 'C++', 'go'], 
+                       'topics': ['openai', 'llm-agent', 'agentic-agi', 'agentic']}
+    
+    import time
 
+    start = time.time()
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(main(language_topics))
     loop.close()
+    end = time.time()
+    print(f"Time taken: {end - start:.2f} seconds")
 
 
     for repo_id, repo_info in result.items():

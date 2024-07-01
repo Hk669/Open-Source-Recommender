@@ -13,13 +13,16 @@ class User(BaseModel):
 
 
 @app.post('/recommendations/')
-async def get_recommendations(request : User) -> dict:
-    username = request.username
+async def get_recommendations(user: User) -> dict:
+    username = user.username
 
     try:
+        print(f'Fetching recommendations for {username}')
         user_details, language_topics = await get_repos(username)
+        print(f'--------\n{user_details}')
+        print(f'--------\n{language_topics}')
         unique_repos = await main(language_topics)
-
+        print(f'--------\n{unique_repos}')
         urls = recommend(user_details,unique_repos)
         return {'recommendations': urls}
     except Exception as e:
@@ -27,9 +30,9 @@ async def get_recommendations(request : User) -> dict:
         raise HTTPException(status_code=500, detail = 'Error generating recommendatoins')
         
 
-async def main():
+async def run_server():
     uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
 if __name__ == '__main__':
-    asyncio.run(main())
+    asyncio.run(run_server())

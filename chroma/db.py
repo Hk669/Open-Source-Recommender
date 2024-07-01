@@ -1,7 +1,6 @@
 import chromadb
 import random
-import os
-import sqlite3
+
 
 # Recommendations
 def recommend(user_details, repos):
@@ -28,7 +27,7 @@ def recommend(user_details, repos):
         new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
         results = collection.query(
             query_texts = [new_doc],
-            n_results = 2,
+            n_results = 3,
         )
         try:
             # recommending the repos in random
