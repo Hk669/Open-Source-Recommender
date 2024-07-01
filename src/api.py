@@ -1,14 +1,8 @@
-"""
-@author : Hrushikesh Dokala
-username : Hk669
-"""
-
-
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from pydantic import BaseModel
 from src.user_data import get_repos
-from src.search import get_projects
+from src.search import main
 from chroma.db import recommend
 import asyncio
 
@@ -18,13 +12,13 @@ class User(BaseModel):
     username:str
 
 
-@app.post('/osrecommender')
+@app.post('/recommendations/')
 async def get_recommendations(request : User) -> dict:
     username = request.username
 
     try:
         user_details, language_topics = await get_repos(username)
-        unique_repos =await get_projects(language_topics)
+        unique_repos = await main(language_topics)
 
         urls = recommend(user_details,unique_repos)
         return {'recommendations': urls}
@@ -34,7 +28,7 @@ async def get_recommendations(request : User) -> dict:
         
 
 async def main():
-    uvicorn.run(app,host='127.0.0.1',port=8000)
+    uvicorn.run(app, host='0.0.0.0', port=8000)
 
 
 if __name__ == '__main__':
