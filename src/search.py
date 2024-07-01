@@ -33,6 +33,7 @@ class Octokit:
                     response.raise_for_status()
                     return await response.json()
 
+
 async def search_repositories(octokit: Octokit, params: Optional[dict]):
     response = await octokit.request('GET', '/search/repositories', params)
     unique_repos = {}
@@ -64,7 +65,7 @@ async def main(language_topics):
 
         for language in languages:
             base_params = {
-                'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2023-01-01',
+                'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
                 'per_page': 100,
@@ -81,7 +82,7 @@ async def main(language_topics):
 
         for topic in topics:
             base_params = {
-                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2023-01-01',
+                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
                 'per_page': 100,
@@ -99,23 +100,19 @@ async def main(language_topics):
         results = await asyncio.gather(*tasks)
         for result in results:
             unique_repos.update(result)
+    
 
     return unique_repos
 
 
-async def get_projects(language_topics):
-    return await main(language_topics)
-
-
-
-def run_event_loop():
+if __name__ == '__main__':
     language_topics = {
-        'languages': ['python', 'javascript'],
-        'topics': ['machine-learning', 'web-development']
+        'languages': ['python'],
+        'topics': ['ai', 'web-development']
     }
 
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(get_projects(language_topics))
+    result = loop.run_until_complete(main(language_topics))
     loop.close()
 
 
