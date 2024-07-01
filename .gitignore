@@ -184,3 +184,7 @@ test/agentchat/test_agent_scripts/*
 .cache_test
 .db
 local_cache
+
+
+# workflows
+workflows/ 

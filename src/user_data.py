@@ -1,9 +1,9 @@
-import requests 
-from src.search import Octokit
+import os
+import aiohttp
 import asyncio
+from src.search import Octokit
 from datetime import datetime
 from aiohttp import ClientSession
-import os
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -22,15 +22,13 @@ async def get_repos(username: str):
             topics_set = set()
 
             url = f'/users/{username}/repos'
-            repos = octokit.request('GET', url)
-            repos_data = repos.json()
+            repos_data = await octokit.request('GET', url)
 
             # iterates through every repository of the user data
             for repo in repos_data:
                 if not repo['fork'] and (repo['description'] or repo['language'] or len(repo['topics'])>0):
                     language_url = repo['languages_url'].replace('https://api.github.com', '')
-                    languages = octokit.request('GET', language_url)
-                    languages_data = languages.json()
+                    languages_data = await octokit.request('GET', language_url)
 
                     user_repo = {
                         'project_name' : repo['name'],
@@ -47,3 +45,13 @@ async def get_repos(username: str):
         print(f"Error fetching data: {e}")
 
     return user_details, language_topics
+
+if __name__ == '__main__':
+    username = 'Hk669'
+    loop = asyncio.get_event_loop()
+    user_details, language_topics = loop.run_until_complete(get_repos(username))
+    loop.close()
+    print('-----')
+    print(user_details)
+    print('-----')
+    print(language_topics)
