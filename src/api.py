@@ -10,21 +10,23 @@ app = FastAPI()
 
 class User(BaseModel):
     username:str
+    extra_topics: list = []
 
 
 @app.post('/recommendations/')
 async def get_recommendations(user: User) -> dict:
     username = user.username
+    extra_topics = user.extra_topics or []
 
     try:
         print(f'Fetching recommendations for {username}')
         user_details, language_topics = await get_repos(username)
         print(f'--------\n{user_details}')
         print(f'--------\n{language_topics}')
-        unique_repos = await main(language_topics)
+        unique_repos = await main(language_topics, extra_topics)
         print(f'--------\n{unique_repos}')
-        urls = recommend(user_details,unique_repos)
-        return {'recommendations': urls}
+        # urls = recommend(user_details,unique_repos)
+        return {'recommendations': unique_repos}
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail = 'Error generating recommendatoins')

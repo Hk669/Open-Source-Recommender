@@ -2,7 +2,7 @@ import os
 import asyncio
 from datetime import datetime
 from aiohttp import ClientSession
-from typing import Literal, Union, Optional
+from typing import Optional, List
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -38,7 +38,7 @@ async def search_repositories(octokit: Octokit, params: Optional[dict]):
     response = await octokit.request('GET', '/search/repositories', params)
     unique_repos = {}
 
-    while len(response['items']) > 0 and params['page'] <= 10:
+    while len(response['items']) > 0 and params['page'] <= 3:
         for item in response['items']:
             if item['id'] not in unique_repos:
                 unique_repos[item['id']] = {
@@ -52,24 +52,26 @@ async def search_repositories(octokit: Octokit, params: Optional[dict]):
     return unique_repos
 
 # Define the main function
-async def main(language_topics):
+async def main(language_topics, 
+               extra_topics: List = None,
+               extra_languages: List = None):
     unique_repos = {}
 
     async with ClientSession() as session:
         octokit = Octokit(GPAT, session)
 
-        languages = language_topics['languages']
-        topics = language_topics['topics']
+        languages = extra_languages + language_topics['languages'] if extra_languages else language_topics['languages']
+        topics = extra_topics + language_topics['topics'] if extra_topics else language_topics['topics']
 
         tasks = []
 
-        for language in languages:
+        for language in languages[:5]:
             print(f"Searching for {language} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 30,
+                'per_page': 7,
                 'page': 1,
             }
 
@@ -81,13 +83,13 @@ async def main(language_topics):
             good_first_issues_params['q'] += ' good-first-issues:>=1'
             tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
 
-        for topic in topics:
+        for topic in topics[:7]:
             print(f"Searching for {topic} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 30,
+                'per_page': 7,
                 'page': 1,
             }
 
