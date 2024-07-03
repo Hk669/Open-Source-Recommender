@@ -4,46 +4,37 @@ from datetime import datetime
 from aiohttp import ClientSession
 from typing import Optional, List
 from dotenv import load_dotenv
+from chroma.db import get_or_create_chromadb_collection, upsert_to_chroma_db
+from .octokit import Octokit
 load_dotenv()
 
 GPAT = os.getenv('GPAT')
 
-
-class Octokit:
-    def __init__(self, auth: str, session):
-        self.auth = auth
-        self.session = session
-
-
-    async def request(self, method: str, url: str, params: Optional[dict]=None):
-        headers = {
-            'Authorization': 'BEARER ' + self.auth,
-            'Accept': 'application/vnd.github+json',
-        }
-
-        url = 'https://api.github.com' + url
-
-        while True:
-            async with self.session.request(method, url, headers=headers, params=params) as response:
-                if response.status == 403:
-                    reset_time = datetime.fromtimestamp(int(response.headers["X-RateLimit-Reset"]))
-                    sleep_time = (reset_time - datetime.now()).total_seconds() + 5
-                    await asyncio.sleep(sleep_time)
-                else:
-                    response.raise_for_status()
-                    return await response.json()
-
-
-async def search_repositories(octokit: Octokit, params: Optional[dict]):
-    response = await octokit.request('GET', '/search/repositories', params)
+async def search_repositories(octokit: Octokit, 
+                              params: Optional[dict]):
     unique_repos = {}
-
+    try:
+        response = await octokit.request('GET', '/search/repositories', params)
+    except Exception as e:
+        raise Exception(f"Error fetching data: {e}")
+    
     while len(response['items']) > 0 and params['page'] <= 3:
         for item in response['items']:
             if item['id'] not in unique_repos:
+                language = params["q"].split('language:')[1].split(' ')[0] if 'language:' in params["q"] else ""
+                topic = params["q"].split('topic:')[1].split(' ')[0] if 'topic:' in params["q"] else ""
+
+                if language:
+                    related = language
+                elif topic:
+                    related = topic
+                else:
+                    related = "Others"
+
                 unique_repos[item['id']] = {
                     "full_name": item['full_name'],
-                    "description": item['description']
+                    "description": item['description'],
+                    "related_language_or_topic": related,
                 }
 
         params['page'] += 1
@@ -105,7 +96,14 @@ async def main(language_topics,
         for result in results:
             unique_repos.update(result)
     
-    print(f"Found {len(unique_repos)} unique repositories")
+    print(f"Found {len(unique_repos)} unique repositories\n--------")
+
+    chroma_db = get_or_create_chromadb_collection()
+    try:
+        upsert_to_chroma_db(chroma_db, unique_repos)
+    except Exception as e:
+        raise Exception(f"Error upserting data to ChromaDB: {e}")
+    
     return unique_repos
 
 
@@ -122,9 +120,5 @@ if __name__ == '__main__':
     end = time.time()
     print(f"Time taken: {end - start:.2f} seconds")
 
-
-    for repo_id, repo_info in result.items():
-        print(f"Repository ID: {repo_id}")
-        print(f"Full Name: {repo_info['full_name']}")
-        print(f"Description: {repo_info['description']}")
-        print("---------------------------")
+    print('------')
+    print(result)

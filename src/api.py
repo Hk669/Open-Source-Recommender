@@ -1,35 +1,39 @@
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from pydantic import BaseModel
-from src.user_data import get_repos
-from src.search import main
-from chroma.db import recommend
+from .user_data import get_repos
+from chroma.db import recommend, get_topic_based_recommendations
 import asyncio
 
 app = FastAPI()
 
 class User(BaseModel):
-    username:str
-    extra_topics: list = []
+    username: str
+    extra_topics: list[str] = []
+    languages: list[str] = []
 
 
 @app.post('/recommendations/')
 async def get_recommendations(user: User) -> dict:
-    username = user.username
-    extra_topics = user.extra_topics or []
-
     try:
-        print(f'Fetching recommendations for {username}')
-        user_details, language_topics = await get_repos(username)
-        print(f'--------\n{user_details}')
-        print(f'--------\n{language_topics}')
-        unique_repos = await main(language_topics, extra_topics)
-        print(f'--------\n{unique_repos}')
-        # urls = recommend(user_details,unique_repos)
-        return {'recommendations': unique_repos}
+        if user.username:
+            # Existing logic for users with GitHub repos
+            user_details, language_topics = await get_repos(user.username)
+            if not user_details:
+                print("No repos found for user")
+                # Fall back to topic-based recommendations if no repos found
+                return get_topic_based_recommendations(user)
+            urls = recommend(user_details)
+        else:
+            raise Exception("No username provided")
+
+        if not urls:
+            return {'recommendations': [], 'message': 'No recommendations found'}
+        
+        return {'recommendations': urls}
     except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail = 'Error generating recommendatoins')
+        print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
         
 
 async def run_server():

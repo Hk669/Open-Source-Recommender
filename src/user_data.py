@@ -1,7 +1,7 @@
 import os
 import aiohttp
 import asyncio
-from src.search import Octokit
+from .octokit import Octokit
 from datetime import datetime
 from aiohttp import ClientSession
 from dotenv import load_dotenv
@@ -36,6 +36,7 @@ async def get_repos(username: str):
                     user_repo = {
                         'project_name' : repo['name'],
                         'description' : repo['description'],
+                        "related_language_or_topic": list(languages_data.keys()),
                     }
                     user_details.append(user_repo)
 
