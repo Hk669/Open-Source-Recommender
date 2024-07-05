@@ -3,8 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
 from .user_data import get_repos
-from chroma.db import recommend, get_topic_based_recommendations
+from src.db import recommend, get_topic_based_recommendations, get_chromadb_collection, upsert_to_chroma_db
+from .search import main
 import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
@@ -22,17 +26,31 @@ class User(BaseModel):
     languages: list[str] = []
 
 
-@app.post('/recommendations/')
+@app.post('/api/recommendations/')
 async def get_recommendations(user: User) -> dict:
     try:
+        urls = []
+
         if user.username:
-            # Existing logic for users with GitHub repos
             user_details, language_topics = await get_repos(user.username)
             if not user_details:
-                print("No repos found for user")
-                # Fall back to topic-based recommendations if no repos found
+                logger.info("No repos found for user")
+                logger.info("Generating topic-based recommendations")
                 return get_topic_based_recommendations(user)
-            urls = recommend(user_details)
+            
+            try:
+                urls = recommend(user_details)
+            except Exception as e:
+                logger.error(f"Error generating recommendations: {str(e)}")
+                logger.info("Generating topic-based recommendations")
+                return get_topic_based_recommendations(user)
+
+            if not urls or len(urls) < 5:
+                logger.info("Fewer than 5 recommendations found, fetching more repositories based on topics")
+                fetched_repos = await main(language_topics, user.extra_topics, user.languages)
+                collection = get_chromadb_collection()
+                upsert_to_chroma_db(collection, fetched_repos)
+                urls = recommend(user_details)
         else:
             raise Exception("No username provided")
 
@@ -41,7 +59,7 @@ async def get_recommendations(user: User) -> dict:
         
         return {'recommendations': urls}
     except Exception as e:
-        print(f"Error: {str(e)}")
+        logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
         
 

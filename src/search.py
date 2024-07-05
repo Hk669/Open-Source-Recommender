@@ -4,9 +4,13 @@ from datetime import datetime
 from aiohttp import ClientSession
 from typing import Optional, List
 from dotenv import load_dotenv
-from chroma.db import get_or_create_chromadb_collection, upsert_to_chroma_db
+from src.db import get_or_create_chromadb_collection, upsert_to_chroma_db
 from .octokit import Octokit
+import logging
+
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 GPAT = os.getenv('GPAT')
 
@@ -57,7 +61,7 @@ async def main(language_topics,
         tasks = []
 
         for language in languages[:5]:
-            print(f"Searching for {language} repositories")
+            logger.info(f"Searching for {language} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-01-01',
                 'sort': 'stars',
@@ -75,7 +79,7 @@ async def main(language_topics,
             tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
 
         for topic in topics[:7]:
-            print(f"Searching for {topic} repositories")
+            logger.info(f"Searching for {topic} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2024-01-01',
                 'sort': 'stars',
@@ -96,7 +100,7 @@ async def main(language_topics,
         for result in results:
             unique_repos.update(result)
     
-    print(f"Found {len(unique_repos)} unique repositories\n--------")
+    logger.info(f"Found {len(unique_repos)} unique repositories\n--------")
 
     chroma_db = get_or_create_chromadb_collection()
     try:
