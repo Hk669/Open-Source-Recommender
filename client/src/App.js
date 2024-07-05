@@ -8,14 +8,20 @@ function App() {
   const [extraTopics, setExtraTopics] = useState("");
   const [recommendations, setRecommendations] = useState([]);
 
+  console.log(languages)
+  console.log(extraTopics)
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/recommendations/", {
-        username: username,
-        languages: languages.split(",").map((lang) => lang.trim()),
-        extra_topics: extraTopics.split(",").map((topic) => topic.trim()),
-      });
+      const response = await axios.post(
+        "http://localhost:8000/api/recommendations/",
+        {
+          username: username,
+          languages: languages.split(",").map((lang) => lang.trim()),
+          extra_topics: extraTopics.split(",").map((topic) => topic.trim()),
+        }
+      );
       setRecommendations(response.data.recommendations);
     } catch (error) {
       console.error("There was an error fetching recommendations:", error);
