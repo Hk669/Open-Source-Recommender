@@ -3,6 +3,9 @@ import chromadb
 import random
 import os
 from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def recommend(user_details):
@@ -54,12 +57,13 @@ def recommend_by_topics(topics: List[str], max_recommendations: int = 7):
     recommended_repos = set()
     collection = get_chromadb_collection()
 
+    logger.info(f"Querying ChromaDB for topics: {topics}")
     results = collection.query(
         query_texts=topics,
         n_results=max_recommendations * 2,  # Get more results to allow for filtering
         where={"related_language_or_topic": {"$in": topics}}
     )
-
+    logger.info(f"Recommendation results: {results}")
     if results['documents'][0]:
         for doc in results['documents'][0]:
             repo_name = doc.split('\n')[0]  # Get the part before the first newline
@@ -74,13 +78,17 @@ def recommend_by_topics(topics: List[str], max_recommendations: int = 7):
     return recommendations
 
 
-def get_topic_based_recommendations(user_topics):
-    all_topics = user_topics.languages + user_topics.extra_topics
+def get_topic_based_recommendations(user):
+    all_topics = user.languages + user.extra_topics
     if not all_topics:
-        raise Exception("Please provide at least one language or topic")
+        raise ValueError("Please provide at least one language or topic")
     
     # Get recommendations based on topics
-    urls = recommend_by_topics(all_topics)
+    try:
+        urls = recommend_by_topics(all_topics)
+    except Exception as e:
+        logger.error(f"Error generating topic-based recommendations: {str(e)}")
+        return {'recommendations': [], 'message': 'Error generating recommendations'}
     
     if not urls:
         return {'recommendations': [], 'message': 'No recommendations found for the given topics'}
@@ -99,7 +107,7 @@ def get_or_create_chromadb_collection():
 
 def get_chromadb_collection():
     try:
-        client = chromadb.PersistentClient(path=r"C:\Users\hrush\OneDrive - Student Ambassadors\Desktop\Open-Source-Recommender\store")
+        client = chromadb.PersistentClient(path=r"C:\Users\hrush\OneDrive - Student Ambassadors\Desktop\Open-Source-Recommender\chroma")
         collection = client.get_collection("projects")
         return collection
     except DatabaseError as e:
