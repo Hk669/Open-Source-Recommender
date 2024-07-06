@@ -97,8 +97,13 @@ def get_topic_based_recommendations(user):
 
 def get_or_create_chromadb_collection():
     try:
-        path = os.path.dirname(os.path.abspath(__file__))
-        client = chromadb.PersistentClient(path=path)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        
+        # Move up two levels to the 'app' directory and then go to 'chroma'
+        app_dir = os.path.abspath(os.path.join(current_dir, '..', '..'))
+        chroma_path = os.path.join(app_dir, 'chroma')
+
+        client = chromadb.PersistentClient(path=chroma_path)
         collection = client.get_or_create_collection("projects")
         return collection
     except DatabaseError as e:

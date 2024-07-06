@@ -12,9 +12,14 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",  # React development server
+    # Add other origins if needed
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  #TODO: Update this to the frontend URL
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,7 +57,12 @@ async def get_recommendations(user: User) -> dict:
                 upsert_to_chroma_db(collection, fetched_repos)
                 urls = recommend(user_details)
         else:
-            raise Exception("No username provided")
+            try:
+                logger.info("Generating topic-based recommendations")
+                return get_topic_based_recommendations(user)
+            except Exception as e:
+                logger.error(f"Error generating recommendations: {str(e)}")
+                return HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
         if not urls:
             return {'recommendations': [], 'message': 'No recommendations found'}
