@@ -1,0 +1,26 @@
+.reco-container {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+}
+
+.reco-container ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.reco-container ul li {
+  margin-bottom: 10px;
+}
+
+.reco-container ul li a {
+  color: #333;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.reco-container ul li a:hover {
+  text-decoration: underline;
+}
