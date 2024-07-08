@@ -1,12 +1,12 @@
-![alt text](public/application.png)
+# Open-Source Recommender
 
-# open-source-recommender
+![alt text](public/application.png)
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
 Search your next contribution to open source easily! A free web app is here to help every developer find cool open-source projects of interest that fit their skillset. Just enter your GitHub username; our intelligent recommender system will do the rest.
 
-## Why Use Open-Source Project Finder?
+## Why Use Open-Source Recommender
 
 - **Perfect for Beginners**: Jump into open source with projects perfect for your current skill level.
 - **Tailored Recommendations**: Recommendations on projects based on your GitHub profile, preferred languages and interests.
