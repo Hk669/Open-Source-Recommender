@@ -11,11 +11,6 @@ function Navbar() {
             <img src={logo} alt="logo" />
           </a>
         </div>
-        {/* <ul className="nav-links">
-          <li>
-            <a href="https://github.com/Hk669">About</a>
-          </li>
-        </ul> */}
       </div>
     </nav>
   );

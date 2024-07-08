@@ -5,7 +5,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Recommendation } from "./components/Recommendation/Recommendation";
 import Navbar from "./components/Navbar/Navbar";
-
+import Footer from "./components/Footer/Footer";
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
@@ -50,6 +50,7 @@ function App() {
         </div>
       </div>
       <ToastContainer />
+      <Footer />
     </div>
   );
 }
