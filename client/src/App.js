@@ -4,38 +4,52 @@ import Input from "./components/Input/Input";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Recommendation } from "./components/Recommendation/Recommendation";
-import { Navbar } from "./components/Navbar/Navbar";
+import Navbar from "./components/Navbar/Navbar";
+
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (recommendations) => {
+  const handleSubmit = async (inputData) => {
     setLoading(true);
-    console.log("recommendations");
-    console.log(recommendations);
-
-    setRecommendations(recommendations);
-    setLoading(false);
+    try {
+      setRecommendations(inputData);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      // You might want to show an error message to the user here
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="App">
       <Navbar />
-      <div className="App-main">
-        <div className="Input">
+      <div className="app-container">
+        <div
+          className={`form-container ${
+            recommendations.length > 0 ? "with-recommendations" : ""
+          }`}
+        >
           <Input onSubmit={handleSubmit} />
         </div>
-        {loading ? (
-          <p>Loading recommendations...</p>
-        ) : recommendations.length > 0 ? (
-          <div className="Recommendation">
+        <div
+          className={`recommendations-container ${
+            recommendations.length > 0 ? "visible" : ""
+          }`}
+        >
+          {loading ? (
+            <div className="loading-container">
+              <div className="loader"></div>
+              <p>Loading recommendations...</p>
+            </div>
+          ) : recommendations.length > 0 ? (
             <Recommendation recommendations={recommendations} />
-          </div>
-        )
-          : null}
-        <ToastContainer />
+          ) : null}
+        </div>
       </div>
+      <ToastContainer />
     </div>
   );
 }
