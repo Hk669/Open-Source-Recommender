@@ -1,29 +1,24 @@
 import React from "react";
-import "./Navbar.css"; // Import CSS file for styling
+import logo from "../../assets/logo.png";
+import "./Navbar.css"; // We'll create this file for styling
 
-export const Navbar = () => {
+function Navbar() {
   return (
-    <div className="navbar">
-      <div className="logo">Logo</div>
-      <ul className="nav-links">
-        <li>
-          <a href="#">
-            <img
-              src="https://img.icons8.com/?size=50&id=59809&format=png&color=000000"
-              alt="home"
-            />
+    <nav className="navbar">
+      <div className="navbar-content">
+        <div className="logo">
+          <a href="/">
+            <img src={logo} alt="logo" />
           </a>
-        </li>
-        <li>
-          <a href="https://github.com/Hk669">
-            <img
-              src="https://img.icons8.com/?size=50&id=62856&format=png&color=000000"
-              alt="github"
-            />
-          </a>
-        </li>
-      </ul>
-    </div>
+        </div>
+        {/* <ul className="nav-links">
+          <li>
+            <a href="https://github.com/Hk669">About</a>
+          </li>
+        </ul> */}
+      </div>
+    </nav>
   );
-};
+}
 
+export default Navbar;
