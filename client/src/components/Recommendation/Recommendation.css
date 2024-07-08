@@ -6,6 +6,16 @@
   margin-top: 20px;
 }
 
+.reco-container ul li:hover {
+  text-decoration: none;
+  background: linear-gradient(to right, #9181f4 -40%, #ed6c7d 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .reco-container ul {
   list-style-type: none;
   padding: 0;
@@ -22,5 +32,5 @@
 }
 
 .reco-container ul li a:hover {
-  text-decoration: underline;
+  text-decoration: none;
 }

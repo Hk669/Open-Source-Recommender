@@ -1,45 +1,41 @@
-# Open-Source-Recommender
-As a developer👨‍💻, I faced many problems in finding open-source projects🤷‍♂️. Don't worry! I brought you guys an application to find your open-source project by just typing in your GitHub username.✌️
-The application recommends Open Source Repositories based on your interests and languages that interest you.
+![alt text](public/application.png)
 
-## Features🤖
+# open-source-recommender
 
-- Retrieves repository details of a GitHub user, including project names, descriptions, programming languages, and topics.
-- Searches and gathers open source projects based on user language and topic interests using the GitHub API.
-- Generates recommendations by comparing user repository details with the collected open-source projects.
-- Provides a web interface using Streamlit to input user information and display recommended projects with link previews.
+This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
+Search your next contribution to open source easily! A free web app is here to help every developer find cool open-source projects of interest that fit their skillset. Just enter your GitHub username; our intelligent recommender system will do the rest.
 
+## Why Use Open-Source Project Finder?
 
+- **Perfect for Beginners**: Jump into open source with projects perfect for your current skill level.
+- **Tailored Recommendations**: Recommendations on projects based on your GitHub profile, preferred languages and interests.
+- **Expand Your Horizons**: New technologies, new projects you never would have crossed.
+- **Absolutely Free**: Just free – gift to the developer community.
 
-https://github.com/Hk669/Open-Source-Recommender/assets/96101829/eb45c74f-82ee-4c61-91f5-468d352084d8
+## How It Works
 
+1. Input your GitHub username
+2. Indicate your preferred programming languages and topics of Interest *Optional*
+3. Get a personalized list of open source projects matching your profile *Optional*
 
+the app analyzes your Github repositories against the vast database of open source projects from github to provide the best recommended match.
 
+## Features
 
+- **User-Friendly Interface:** Clean, intuitive design for seamless performance.
+- **GitHub Integration**: Bases Users and Projects on the GitHub API for proper user data and details of projects
+- **Smart Recommendations**: It fits appropriate projects to each user using robust algorithms.
+- **Diverse Project Pool**: Multiple projects from different domains and projects which are of any difficulty level
+- **Quick Access**: There are multiple direct links to recommended projects to access them fast.
 
+## Get Started
 
-## Installation
+**still under construction*
 
-1. Clone the repository:
+## Feedback
 
-   ``` shell
-   git clone https://github.com/Hk669/Open-Source-Recommender.git
-
-   ```
-
-2. Install the required dependencies:
-
-   ```shell
-   pip install -r requirements.txt
-   ```
-
-3. Obtain a GitHub Personal Access Token (PAT):
-   - Visit https://github.com/settings/tokens and generate a new token with the necessary permissions.
-   - Copy the token and update the `ACCESS_TOKEN` variable in the `user.py` file with your token.
-
-## Contributions
-- Contributions to the Open Source recommender project are welcome. If you find any bugs, have suggestions for improvements, or want to add new features, please submit an issue or create a pull request.
+If you have any suggestions, find any bugs, or have success stories you'd like to share with me, please do so. Your input will make the experience better for all.
 
 ## License
 
