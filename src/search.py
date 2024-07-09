@@ -63,7 +63,7 @@ async def main(language_topics,
         for language in languages[:5]:
             logger.info(f"Searching for {language} repositories")
             base_params = {
-                'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-01-01',
+                'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-03-01',
                 'sort': 'stars',
                 'order': 'desc',
                 'per_page': 7,
@@ -71,17 +71,17 @@ async def main(language_topics,
             }
 
             help_wanted_params = base_params.copy()
-            help_wanted_params['q'] += ' help-wanted-issues:>=1'
+            help_wanted_params['q'] += ' help-wanted-issues:>2'
             tasks.append(asyncio.create_task(search_repositories(octokit, help_wanted_params)))
 
             good_first_issues_params = base_params.copy()
-            good_first_issues_params['q'] += ' good-first-issues:>=1'
+            good_first_issues_params['q'] += ' good-first-issues:>2'
             tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
 
         for topic in topics[:7]:
             logger.info(f"Searching for {topic} repositories")
             base_params = {
-                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>=2024-01-01',
+                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>2024-03-01',
                 'sort': 'stars',
                 'order': 'desc',
                 'per_page': 7,
@@ -89,11 +89,11 @@ async def main(language_topics,
             }
 
             help_wanted_params = base_params.copy()
-            help_wanted_params['q'] += ' help-wanted-issues:>=1'
+            help_wanted_params['q'] += ' help-wanted-issues:>1'
             tasks.append(asyncio.create_task(search_repositories(octokit, help_wanted_params)))
 
             good_first_issues_params = base_params.copy()
-            good_first_issues_params['q'] += ' good-first-issues:>=1'
+            good_first_issues_params['q'] += ' good-first-issues:>1'
             tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
 
         results = await asyncio.gather(*tasks)

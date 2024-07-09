@@ -4,7 +4,7 @@ import requests
 import logging
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 import uvicorn
@@ -13,13 +13,14 @@ from src.db import (recommend,
                     get_topic_based_recommendations, 
                     get_chromadb_collection, 
                     upsert_to_chroma_db)
-from src.models import User, GithubUser
+from src.models import User, GithubUser, get_user_collection
 load_dotenv()
 
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 logger = logging.getLogger(__name__)
 
@@ -127,11 +128,31 @@ async def github_callback(code: str):
 
         print({"access_token": access_token, "user_data": user_data})
 
-        return {"access_token": access_token, "user_data": github_user.model_dump()}
-        # return {"authenticated": True}
+        # return {"access_token": access_token, "user_data": github_user.model_dump()}
+        return RedirectResponse(f'{FRONTEND_URL}/auth-callback?authenticated=true&access_token={access_token}', status_code=302)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error authenticating: {str(e)}")
 
+@app.get('/verify-token')
+async def verify_token(authorization: str = Header(None)):
+    try:
+        if authorization is None:
+            raise HTTPException(status_code=401, detail="Authorization header missing")
+
+        token = authorization.split(" ")[1]
+        user_collection = await get_user_collection()
+        user = await user_collection.find_one({"access_token": token})
+        if user:
+            user['_id'] = str(user['_id'])
+            return {"user_data": user}
+        else:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error verifying token: {str(e)}")
+
+@app.options("/verify-token")
+async def preflight_verify_token():
+    return {"message": "Preflight response"}
 
 async def run_server():
     uvicorn.run(app, host='0.0.0.0', port=8000)
