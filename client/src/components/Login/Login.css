@@ -1,0 +1,24 @@
+.github-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #24292e;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1.2rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.github-login-button:hover {
+  background: linear-gradient(to right, #9181f4 -40%, #fffa64 140%);
+  -webkit-text-fill-color: black;
+  cursor: pointer;
+}
+
+.github-icon {
+  font-size: 1.5rem;
+  margin-right: 0.5rem;
+}
