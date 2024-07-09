@@ -24,6 +24,7 @@ Jinja2==3.1.4
 markdown-it-py==3.0.0
 MarkupSafe==2.1.5
 mdurl==0.1.2
+motor==3.5.0
 multidict==6.0.5
 orjson==3.10.5
 pydantic==2.7.4
