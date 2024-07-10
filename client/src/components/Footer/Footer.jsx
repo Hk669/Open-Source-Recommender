@@ -6,7 +6,12 @@ const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
-        <p>*Can make few mistakes in recommendations.</p>
+        <p>
+          Developed by{" "}
+          <strong>
+            <a href="https://github.com/Hk669">Hrushikesh Dokala</a>
+          </strong>
+        </p>
         <div className="social-links">
           <a
             href="https://github.com/Hk669/Open-Source-Recommender"

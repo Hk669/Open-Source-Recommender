@@ -9,13 +9,13 @@ const Input = ({ onSubmit }) => {
   const [extraTopics, setExtraTopics] = useState([]);
   const [languageInput, setLanguageInput] = useState("");
   const [extraTopicInput, setExtraTopicInput] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const accessToken = localStorage.getItem("github_token");
-    console.log(accessToken);
-    if (!accessToken) {
-      toast.error("Access token not found. Please log in.", {
+    const jwtToken = localStorage.getItem("jwt_token");
+    if (!jwtToken) {
+      toast.error("JWT token not found. Please log in.", {
         position: "top-right",
       });
       return;
@@ -25,11 +25,14 @@ const Input = ({ onSubmit }) => {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/recommendations/",
         {
-          username,
-          access_token: accessToken,
           languages: languages,
           extra_topics: extraTopics,
         },
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+          },
+        }
       );
       onSubmit(response.data.recommendations);
     } catch (error) {
@@ -46,6 +49,8 @@ const Input = ({ onSubmit }) => {
           position: "top-right",
         });
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -145,7 +150,9 @@ const Input = ({ onSubmit }) => {
           placeholder="Type and press Enter to add"
         />
       </label>
-      <button type="submit">Get Recommendations</button>
+      <button type="submit" disabled={loading}>
+        {loading ? "Fetching Recommendations..." : "Get Recommendations"}
+      </button>
     </form>
   );
 };

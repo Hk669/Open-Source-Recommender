@@ -22,6 +22,21 @@
   
 }
 
+.footer-content a {
+  text-decoration: none;
+  color: rgb(48, 48, 44);
+}
+
+.footer-content a:hover {
+  text-decoration: none;
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .social-links {
   display: flex;
   gap: 20px;

@@ -1,11 +1,13 @@
 form {
   background: white;
   padding: 20px;
+  padding-top: 50px;
   border-radius: 10px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   width: 90%;
   max-width: 550px;
   margin: 0 auto;
+  padding-left: 40px;
 }
 
 
@@ -18,7 +20,7 @@ form label {
 }
 
 form input {
-    width: 90%;
+    width: 95%;
     padding: 10px;
     margin-bottom: 15px;
     border: 1px solid #ccc;

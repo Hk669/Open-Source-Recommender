@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import Login from "./components/Login/Login";
 import { useNavigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
+import GithubCallback from "./components/GithubCallback";
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
@@ -18,7 +20,7 @@ function App() {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem("github_token");
+      const token = localStorage.getItem("jwt_token");
       if (token) {
         try {
           const response = await fetch("http://127.0.0.1:8000/verify-token", {
@@ -31,10 +33,10 @@ function App() {
           if (response.ok) {
             const data = await response.json();
             setIsAuthenticated(true);
-            setUserData(data.user_data);
+            setUserData(data); // The backend now returns only necessary user information
             navigate("/recommender");
           } else {
-            localStorage.removeItem("github_token");
+            localStorage.removeItem("jwt_token");
             navigate("/");
           }
         } catch (error) {
@@ -58,42 +60,51 @@ function App() {
     }
   };
 
-  return (
-    <div className="App">
-      <Navbar isAuthenticated={isAuthenticated} userData={userData} />
-      <div className="app-container">
-        {!isAuthenticated ? (
-          <Login />
-        ) : (
-          <>
-            <div
-              className={`form-container ${
-                recommendations.length > 0 ? "with-recommendations" : ""
-              }`}
-            >
-              <Input onSubmit={handleSubmit} userData={userData} />
-            </div>
-            <div
-              className={`recommendations-container ${
-                recommendations.length > 0 ? "visible" : ""
-              }`}
-            >
-              {loading ? (
-                <div className="loading-container">
-                  <div className="loader"></div>
-                  <p>Loading recommendations...</p>
-                </div>
-              ) : recommendations.length > 0 ? (
-                <Recommendation recommendations={recommendations} />
-              ) : null}
-            </div>
-          </>
-        )}
+  const handleLogout = () => {
+    localStorage.removeItem("jwt_token");
+    setIsAuthenticated(false);
+    setUserData(null);
+    navigate("/login");
+  };
+
+    return (
+      <div className="App">
+        <Navbar isAuthenticated={isAuthenticated} userData={userData} onLogout={handleLogout} />
+        <div className="app-container">
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/auth-callback" element={<GithubCallback />} />
+            <Route
+              path="/recommender"
+              element={
+                isAuthenticated ? (
+                  <>
+                    <div className={`form-container ${recommendations.length > 0 ? "with-recommendations" : ""}`}>
+                      <Input onSubmit={handleSubmit} userData={userData} />
+                    </div>
+                    <div className={`recommendations-container ${recommendations.length > 0 ? "visible" : ""}`}>
+                      {loading ? (
+                        <div className="loading-container">
+                          <div className="loader"></div>
+                          <p>Loading recommendations...</p>
+                        </div>
+                      ) : recommendations.length > 0 ? (
+                        <Recommendation recommendations={recommendations} />
+                      ) : null}
+                    </div>
+                  </>
+                ) : (
+                  <Login />
+                )
+              }
+            />
+            <Route path="*" element={<Login />} />
+          </Routes>
+        </div>
+        <ToastContainer />
+        <Footer />
       </div>
-      <ToastContainer />
-      <Footer />
-    </div>
-  );
-}
+    );
+  };
 
 export default App;
