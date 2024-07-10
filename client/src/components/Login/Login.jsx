@@ -5,7 +5,7 @@ import { FaGithub } from "react-icons/fa";
 
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = "http://127.0.0.1:8000/github-login";
+    window.location.href = `${process.env.REACT_APP_API_URL}/github-login`;
   };
 
   return (

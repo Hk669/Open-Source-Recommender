@@ -5,7 +5,7 @@ export const refreshToken = async () => {
   const currentToken = localStorage.getItem("jwt_token");
   try {
     const response = await axios.post(
-      "http://127.0.0.1:8000/refresh-token",
+      `${process.env.REACT_APP_API_URL}/refresh-token`,
       {},
       {
         headers: {

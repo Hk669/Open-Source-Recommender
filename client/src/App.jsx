@@ -23,7 +23,7 @@ function App() {
       const token = localStorage.getItem("jwt_token");
       if (token) {
         try {
-          const response = await fetch("http://127.0.0.1:8000/verify-token", {
+          const response = await fetch(`${process.env.REACT_APP_API_URL}/verify-token`, {
             method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
