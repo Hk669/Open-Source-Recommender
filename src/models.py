@@ -6,7 +6,10 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-MONGODB_URL = os.getenv("MONGODB_URL", "mongodb://localhost:27017")
+MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://hrushikeshwork:0l3ubwPJwBNURYYS@cluster0.ezruhaa.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+if not MONGODB_URL:
+    raise ValueError("MONGODB_URL environment variable is not set")
+
 client = AsyncIOMotorClient(MONGODB_URL)
 db = client['github']
 
