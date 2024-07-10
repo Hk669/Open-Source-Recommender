@@ -4,12 +4,13 @@ import asyncio
 from .octokit import Octokit
 from datetime import datetime
 from aiohttp import ClientSession
+from .models import get_user_collection
 from dotenv import load_dotenv
 load_dotenv()
 
 GPAT = os.getenv('GPAT')
 
-async def get_repos(username: str):
+async def get_repos(user):
     """
     Fetches the repositories of the user
     """
@@ -18,13 +19,16 @@ async def get_repos(username: str):
     
     try:
         async with ClientSession() as session:
-            octokit = Octokit(GPAT, session)
+            if not user.access_token:
+                raise ValueError("Access token not found")
+
+            octokit = Octokit(user.access_token, session)
 
             # To store the unique data of the user 
             languages_map = {} # store the freq of the languages
             topics_map = {}
 
-            url = f'/users/{username}/repos'
+            url = f'/users/{user.username}/repos'
             repos_data = await octokit.request('GET', url)
 
             # iterates through every repository of the user data
@@ -47,8 +51,8 @@ async def get_repos(username: str):
                         topics_map[topic] = topics_map.get(topic, 0) + 1
 
             # return the top5 languages
-            top5_languages = sorted(languages_map, key=languages_map.get, reverse=True)[:5]
-            top_topics = sorted(topics_map, key=topics_map.get, reverse=True)[:7]
+            top5_languages = user.languages + sorted(languages_map, key=languages_map.get, reverse=True)[:5] if user.languages else sorted(languages_map, key=languages_map.get, reverse=True)[:5]
+            top_topics = user.extra_topics + sorted(topics_map, key=topics_map.get, reverse=True)[:7] if user.extra_topics else sorted(topics_map, key=topics_map.get, reverse=True)[:7]
             language_topics = {"languages" : list(top5_languages), "topics" : list(top_topics)}
 
     except aiohttp.ClientError as e:

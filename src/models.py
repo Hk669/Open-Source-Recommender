@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
@@ -16,8 +16,9 @@ async def get_user_collection():
 
 class User(BaseModel):
     username: str
-    extra_topics: list[str] = []
-    languages: list[str] = []
+    access_token: str
+    extra_topics: List[str] = []
+    languages: List[str] = []
 
 
 class GithubUser(BaseModel):

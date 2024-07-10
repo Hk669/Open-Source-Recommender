@@ -4,8 +4,9 @@ from datetime import datetime
 from aiohttp import ClientSession
 from typing import Optional, List
 from dotenv import load_dotenv
-from src.db import get_or_create_chromadb_collection, upsert_to_chroma_db
+from src.db import get_chromadb_collection, upsert_to_chroma_db
 from .octokit import Octokit
+from .models import get_user_collection
 import logging
 
 load_dotenv()
@@ -47,19 +48,27 @@ async def search_repositories(octokit: Octokit,
     return unique_repos
 
 # Define the main function
-async def main(language_topics, 
+async def main(language_topics,
+               access_token: str,
                extra_topics: List = None,
-               extra_languages: List = None):
+               extra_languages: List = None,
+               ):
     unique_repos = {}
 
     async with ClientSession() as session:
-        octokit = Octokit(GPAT, session)
+        if access_token:
+            octokit = Octokit(access_token, session)
+        else:
+                # octokit = Octokit(GPAT, session)
+            raise ValueError("Access token not found")
+        # octokit = Octokit(GPAT, session)
 
-        languages = extra_languages + language_topics['languages'] if extra_languages else language_topics['languages']
-        topics = extra_topics + language_topics['topics'] if extra_topics else language_topics['topics']
+        languages = language_topics["languages"] if language_topics["languages"] else []
+        languages = extra_languages + languages if extra_languages else languages
+        topics = extra_topics + languages if extra_topics else languages
 
         tasks = []
-
+        print("Fetching repositories using main....")
         for language in languages[:5]:
             logger.info(f"Searching for {language} repositories")
             base_params = {
@@ -81,7 +90,7 @@ async def main(language_topics,
         for topic in topics[:7]:
             logger.info(f"Searching for {topic} repositories")
             base_params = {
-                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>2024-03-01',
+                'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
                 'per_page': 7,
@@ -102,7 +111,7 @@ async def main(language_topics,
     
     logger.info(f"Found {len(unique_repos)} unique repositories\n--------")
 
-    chroma_db = get_or_create_chromadb_collection()
+    chroma_db = get_chromadb_collection()
     try:
         upsert_to_chroma_db(chroma_db, unique_repos)
     except Exception as e:
@@ -119,10 +128,10 @@ if __name__ == '__main__':
 
     start = time.time()
     loop = asyncio.get_event_loop()
-    result = loop.run_until_complete(main(language_topics))
+    # result = loop.run_until_complete(main(language_topics))
     loop.close()
     end = time.time()
     print(f"Time taken: {end - start:.2f} seconds")
 
     print('------')
-    print(result)
+    # print(result)

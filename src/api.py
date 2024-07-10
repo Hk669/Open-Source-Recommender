@@ -39,34 +39,32 @@ app.add_middleware(
 async def get_recommendations(user: User) -> dict:
     try:
         urls = []
-
-        if user.username:
-            user_details, language_topics = await get_repos(user.username)
+        print("user", user)
+        if not user.access_token:
+            raise HTTPException(status_code=401, detail="Access token missing")
+        
+        if user.access_token:
+            # TODO: Fetch repos using topics
+            user_details, language_topics = await get_repos(user)
             if not user_details:
                 logger.info("No repos found for user")
                 logger.info("Generating topic-based recommendations")
                 return get_topic_based_recommendations(user)
             
             try:
-                urls = recommend(user_details)
+                urls = recommend(user_details, language_topics)
             except Exception as e:
                 logger.error(f"Error generating recommendations: {str(e)}")
                 logger.info("Generating topic-based recommendations")
                 return get_topic_based_recommendations(user)
 
-            if not urls or len(urls) < 5:
+            if urls and len(urls) < 10:
                 logger.info("Fewer than 5 recommendations found, fetching more repositories based on topics")
-                fetched_repos = await main(language_topics, user.extra_topics, user.languages)
-                collection = get_chromadb_collection()
-                upsert_to_chroma_db(collection, fetched_repos)
-                urls = recommend(user_details)
+                fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=user.extra_topics, extra_languages=user.languages)
+                urls = recommend(user_details, language_topics)
         else:
-            try:
-                logger.info("Generating topic-based recommendations")
-                return get_topic_based_recommendations(user)
-            except Exception as e:
-                logger.error(f"Error generating recommendations: {str(e)}")
-                return HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+            logger.error(f"Error generating recommendations: {str(e)}")
+            return HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
         if not urls:
             return {'recommendations': [], 'message': 'No recommendations found'}

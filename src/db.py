@@ -8,7 +8,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def recommend(user_details):
+def recommend(user_details, languages_topics):
     """generate recommendations for the user"""
 
     recommendations = []
@@ -16,16 +16,16 @@ def recommend(user_details):
 
     collection = get_chromadb_collection()
     print("collection", collection)
-
+    languages_topics = languages_topics["languages"] + languages_topics["topics"]
     for user_proj in user_details:
         new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
-        languages = user_proj['related_language_or_topic']
+        
 
         results = collection.query(
             query_texts = [new_doc],
             n_results = 10,
             where = {
-                "related_language_or_topic": {"$in": languages}
+                "related_language_or_topic": {"$in": languages_topics}
             }
         )
         print("--------\n", results)
@@ -134,7 +134,7 @@ def upsert_to_chroma_db(collection, unique_repos):
         })
     
     # Upsert data to the collection
-    collection.upsert(
+    collection.add(
         ids=ids,
         documents=documents,
         metadatas=metadatas
