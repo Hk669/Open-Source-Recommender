@@ -3,6 +3,8 @@ from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+from dotenv import load_dotenv
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
