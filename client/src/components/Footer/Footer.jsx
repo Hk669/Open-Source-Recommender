@@ -9,7 +9,7 @@ const Footer = () => {
         <p>*Can make few mistakes in recommendations.</p>
         <div className="social-links">
           <a
-            href="https://github.com/Hk669"
+            href="https://github.com/Hk669/Open-Source-Recommender"
             target="_blank"
             rel="noopener noreferrer"
           >

@@ -12,14 +12,24 @@ const Input = ({ onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const accessToken = localStorage.getItem("github_token");
+    console.log(accessToken);
+    if (!accessToken) {
+      toast.error("Access token not found. Please log in.", {
+        position: "top-right",
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         "http://127.0.0.1:8000/api/recommendations/",
         {
           username,
-          languages,
+          access_token: accessToken,
+          languages: languages,
           extra_topics: extraTopics,
-        }
+        },
       );
       onSubmit(response.data.recommendations);
     } catch (error) {
