@@ -7,10 +7,10 @@ const GithubCallback = () => {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const authenticated = urlParams.get("authenticated");
-    const accessToken = urlParams.get("access_token");
+    const jwtToken = urlParams.get("jwt");
 
-    if (authenticated === "true" && accessToken) {
-      localStorage.setItem("github_token", accessToken);
+    if (authenticated === "true" && jwtToken) {
+      localStorage.setItem("jwt_token", jwtToken);
       navigate("/recommender");
     } else {
       navigate("/");
