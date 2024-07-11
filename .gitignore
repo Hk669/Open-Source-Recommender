@@ -187,5 +187,5 @@ local_cache
 
 
 # workflows
-workflows/ 
+update_db.yml
 store/
