@@ -2,11 +2,25 @@ from sqlite3 import DatabaseError
 import chromadb
 import random
 import os
-from typing import List
-from src.models import RepositoryRecommendation
 import logging
+from typing import List
+from datetime import datetime, timezone
+from src.models import RepositoryRecommendation
+from openai import AzureOpenAI
+from dotenv import load_dotenv
+import chromadb.utils.embedding_functions as embedding_functions
+load_dotenv()
 
 logger = logging.getLogger(__name__)
+
+openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                api_base=os.getenv("AZURE_OPENAI_ENDPOINT"),
+                api_type="azure",
+                api_version="2024-02-01",
+                model_name="text-embedding-3-small"
+            )
+
 
 def recommend(user_details, 
               languages_topics) -> List[RepositoryRecommendation]:
@@ -20,7 +34,7 @@ def recommend(user_details,
     for user_proj in user_details:
         new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
         
-
+        print(f"Querying ChromaDB for project: {user_proj}")
         results = collection.query(
             query_texts = [new_doc],
             n_results = 10,
@@ -29,6 +43,7 @@ def recommend(user_details,
             }
         )
         logging.info(f"UserProject: {user_proj}, Repositories: {results}")
+        print(f"UserProject: {user_proj}, Repositories: {results}")
         if results['documents'][0]:
             # Extract repository names and construct GitHub URLs
             ids = results["ids"][0]
@@ -107,7 +122,7 @@ def recommend_by_topics(topics: List[str],
                             "open_issues_count": metadata.get("open_issues_count"),
                             "avatar_url": metadata.get("owner", {}).get("avatar_url"),
                             "language": metadata.get("language"),
-                            "updated_at": metadata.get("updated_at"),
+                            "updated_at": convert_to_readable_format(metadata.get("updated_at")),
                             "topics": metadata.get("topics", [])
                         })
                     recommended_repos.add(repo_url)
@@ -145,7 +160,7 @@ def get_chromadb_collection():
         db_path = os.path.join(project_dir, "chroma")
 
         client = chromadb.PersistentClient(path=db_path)
-        collection = client.get_or_create_collection("projects")
+        collection = client.get_or_create_collection("projects", embedding_function=openai_ef)
         return collection
     except DatabaseError as e:
         raise Exception(f"Error in getting collection: {e}")
@@ -217,3 +232,17 @@ def upsert_to_chroma_db(collection, unique_repos):
         # Catch any unexpected errors during upsert
         raise Exception(f"Unexpected error upserting data to ChromaDB: {e}")
 
+
+def convert_to_readable_format(time_str):
+    # Parse the input string to a datetime object
+    dt = datetime.strptime(time_str, "%Y-%m-%dT%H:%M:%SZ")
+
+    dt = dt.replace(tzinfo=timezone.utc)
+    readable_time_str = dt.strftime("%B %d, %Y at %H:%M %Z")
+    
+    return readable_time_str
+
+
+if __name__ == "__main__":
+    collection = get_chromadb_collection()
+    print(collection)
