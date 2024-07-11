@@ -63,3 +63,15 @@ class GithubUser(BaseModel):
             logger.error(f"Failed to save user to DB: {str(e)}")
             raise ValueError("Failed to save user to DB")
         
+
+class RepositoryRecommendation(BaseModel):
+    full_name: str
+    description: Optional[str]
+    related_language_or_topic: str
+    stargazers_count: int
+    forks_count: int
+    open_issues_count: int
+    avatar_url: Optional[str]
+    language: str
+    updated_at: str
+    topics: str

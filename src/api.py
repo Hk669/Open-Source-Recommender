@@ -164,7 +164,6 @@ async def get_recommendations(current_user: dict = Depends(get_current_user)) ->
     try:
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"])
-        
         user_details, language_topics = await get_repos(user)
         if not user_details:
             logger.info("No repos found for user")

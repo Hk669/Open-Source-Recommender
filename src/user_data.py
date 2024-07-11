@@ -7,6 +7,9 @@ from aiohttp import ClientSession
 from .models import get_user_collection
 from dotenv import load_dotenv
 load_dotenv()
+import logging
+
+logger = logging.getLogger(__name__)
 
 GPAT = os.getenv('GPAT')
 
@@ -56,14 +59,17 @@ async def get_repos(user):
             language_topics = {"languages" : list(top5_languages), "topics" : list(top_topics)}
 
     except aiohttp.ClientError as e:
-        print(f"Error fetching data: {e}")
+        logger.info(f"Error fetching data: {e}")
 
     return user_details, language_topics
 
 if __name__ == '__main__':
+    from .models import User
     username = 'Hk669'
+    user = User(username=username, access_token=GPAT)
+
     loop = asyncio.get_event_loop()
-    user_details, language_topics = loop.run_until_complete(get_repos(username))
+    user_details, language_topics = loop.run_until_complete(get_repos(user))
     loop.close()
     print('-----')
     print(user_details)

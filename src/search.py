@@ -13,6 +13,9 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(filename='repository_search.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 GPAT = os.getenv('GPAT')
 
 async def search_repositories(octokit: Octokit, 
@@ -35,16 +38,28 @@ async def search_repositories(octokit: Octokit,
                     related = topic
                 else:
                     related = "Others"
+                
+                topics = item.get('topics', [])
+                topics_str = ", ".join(topics) if topics else ""
 
                 unique_repos[item['id']] = {
-                    "full_name": item['full_name'],
-                    "description": item['description'],
+                    "full_name": item.get('full_name'),
+                    "description": item.get('description'),
                     "related_language_or_topic": related,
+                    "stargazers_count": item.get('stargazers_count'),
+                    "forks_count": item.get('forks_count'),
+                    "open_issues_count": item.get('open_issues_count'),
+                    "avatar_url": item.get('owner', {}).get('avatar_url'),
+                    "language": item.get('language'),
+                    "updated_at": item.get('updated_at'),
+                    "topics": topics_str
                 }
 
         params['page'] += 1
         response = await octokit.request('GET', '/search/repositories', params)
+        logging.info(f"Page: {params['page'] - 1}, Repositories: {response['items']}")
 
+    logging.info(f"Unique Repositories: {unique_repos}")
     return unique_repos
 
 # Define the main function
@@ -113,6 +128,7 @@ async def main(language_topics,
 
     chroma_db = get_chromadb_collection()
     try:
+        print("Upserting data to ChromaDB....")
         upsert_to_chroma_db(chroma_db, unique_repos)
     except Exception as e:
         raise Exception(f"Error upserting data to ChromaDB: {e}")
@@ -121,17 +137,15 @@ async def main(language_topics,
 
 
 if __name__ == '__main__':
-    language_topics = {'languages': ['Jupyter Notebook', 'Python', 'C++', 'go'], 
-                       'topics': ['openai', 'llm-agent', 'agentic-agi', 'agentic']}
+    language_topics = {'languages': ['Python'], 
+                       'topics': ['llm-agent', 'agentic-agi', 'agentic']}
     
     import time
 
     start = time.time()
     loop = asyncio.get_event_loop()
-    # result = loop.run_until_complete(main(language_topics))
+    result = loop.run_until_complete(main(language_topics, access_token=GPAT))
     loop.close()
     end = time.time()
     print(f"Time taken: {end - start:.2f} seconds")
 
-    print('------')
-    # print(result)
