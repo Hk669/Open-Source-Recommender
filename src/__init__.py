@@ -9,5 +9,12 @@ from .octokit import Octokit
 from .models import (
     User,
     GithubUser,
+    RepositoryRecommendation,
     get_user_collection
+)
+from .db import (
+    recommend,
+    get_topic_based_recommendations,
+    get_chromadb_collection,
+    upsert_to_chroma_db
 )
