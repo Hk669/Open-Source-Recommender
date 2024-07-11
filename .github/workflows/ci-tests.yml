@@ -29,3 +29,7 @@ jobs:
                 pytest tests
               env:
                 JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY}}
+                GITHUB_CLIENT_ID: ${{ secrets.CLIENT_ID }}
+                GITHUB_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+                MONGODB_URL: ${{ secrets.MONGODB_URL }}
+                GPAT: ${{ secrets.GPAT }}
