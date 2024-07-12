@@ -32,7 +32,7 @@ const Input = ({ onSubmit }) => {
 
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/recommendations/`,
+        `${process.env.REACT_APP_API_URL}/api/recommendations/`,
         {
           username: username,
           languages: languages,

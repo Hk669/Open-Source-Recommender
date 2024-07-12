@@ -3,9 +3,11 @@ import React from "react";
 import "./Login.css";
 import { FaGithub } from "react-icons/fa";
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Login = () => {
   const handleLogin = () => {
-    window.location.href = `http://127.0.0.1:8000/github-login`;
+    window.location.href = `${API_URL}/github-login`;
   };
 
   return (
@@ -59,8 +61,8 @@ const Login = () => {
               your skills and interests.
             </li>
             <li>
-              <strong>Exposure:</strong> Enables you to contribute to
-              the open-source community and make a difference.
+              <strong>Exposure:</strong> Enables you to contribute to the
+              open-source community and make a difference.
             </li>
             <li>
               <strong>Secure, Fast, and Free to Use:</strong> Access all
