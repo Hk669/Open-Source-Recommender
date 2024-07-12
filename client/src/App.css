@@ -59,7 +59,7 @@ body {
   justify-content: space-between;
   width: 100%;
   max-width: 1200px;
-  margin: 0 auto;
+  margin-top: auto;
   padding: 20px;
 }
 
@@ -96,6 +96,6 @@ body {
   }
 
   .recommendations-container {
-    margin-top: 20px;
+    margin-top: 10px;
   }
 }

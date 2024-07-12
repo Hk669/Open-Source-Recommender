@@ -11,12 +11,12 @@ const Login = () => {
   return (
     <div className="login-container">
       <h1>Search Your Next Open-Source Contribution with Ease!</h1>
-      <h3>
+      <p>
         Discover the perfect open-source projects to contribute to with this
         personalized recommendation system. Whether you're new to open source or
         a seasoned contributor, find relevant repositories tailored just for
         you.
-      </h3>
+      </p>
       <br></br>
 
       <button className="github-login-button" onClick={handleLogin}>

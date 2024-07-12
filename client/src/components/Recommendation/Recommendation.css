@@ -6,38 +6,14 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-.reco-container ul li:hover {
-  text-decoration: none;
-  background: linear-gradient(to right, #9181f4 -40%, #ed6c7d 140%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color:transparent;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.reco-container ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.reco-container ul li {
-  margin-bottom: 10px;
-}
-
-.reco-container ul li a {
-  color: #333;
-  text-decoration: none;
-  font-size: 16px;
-}
-
-.reco-container ul li a:hover {
-  text-decoration: none;
+.reco-container h2 {
+  margin-bottom: 20px;
 }
 
 .repo-card {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -66,28 +42,14 @@
   display: flex;
   flex-wrap: wrap;
   margin-top: 8px;
+  font-size: small;
 }
 
 .repo-details span {
   margin-right: 10px;
   margin-bottom: 5px;
-  padding: 5px 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-}
-
-.repo-details span:first-child {
-  margin-left: 0;
-}
-
-.repo-avatar {
-  margin-left: 20px;
-}
-
-.repo-avatar img {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
+  padding: 5px 10px; /* Keep padding for spacing */
+  /* Removed background-color and border-radius */
 }
 
 .repo-link {
@@ -102,6 +64,12 @@
 
 .repo-link a:hover {
   text-decoration: underline;
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .topics-container {

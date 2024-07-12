@@ -1,7 +1,11 @@
 import React from "react";
 import "./Recommendation.css";
+import { formatDistanceToNow } from "date-fns";
 
 export const Recommendation = ({ recommendations }) => {
+  const timeAgo = (date) =>
+    formatDistanceToNow(new Date(date), { addSuffix: true });
+
   return (
     <div className="reco-container">
       <h2>Recommendations</h2>
@@ -12,13 +16,6 @@ export const Recommendation = ({ recommendations }) => {
               <div className="repo-info">
                 <h3>{repo.full_name}</h3>
                 <p>{repo.description}</p>
-                <div className="repo-details">
-                  <span>Language: {repo.language}</span>
-                  <span>Stars: {repo.stargazers_count}</span>
-                  <span>Forks: {repo.forks_count}</span>
-                  <span>Open Issues: {repo.open_issues_count}</span>
-                  <span>Last Updated: {repo.updated_at}</span>
-                </div>
                 <div className="topics-container">
                   <span>Topics: </span>
                   {repo.topics
@@ -30,18 +27,26 @@ export const Recommendation = ({ recommendations }) => {
                       </div>
                     ))}
                 </div>
-              </div>
-              <div className="repo-avatar">
-                {repo.avatar_url && <img src={repo.avatar_url} alt="Avatar" />}
-              </div>
-              <div className="repo-link">
-                <a
-                  href={repo.repo_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View Repository
-                </a>
+                <br></br>
+                <div className="repo-details">
+                  <span>
+                    ⭐ {Math.round(repo.stargazers_count / 100) / 10}k
+                  </span>
+                  <span>🔵 {repo.language}</span>
+                  <span>issues: {repo.open_issues_count}</span>
+                  <span>forks: {repo.forks_count}</span>
+                  <span>Updated {timeAgo(repo.updated_at)}</span>
+                </div>
+                <br></br>
+                <div className="repo-link">
+                  <a
+                    href={repo.repo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Repository
+                  </a>
+                </div>
               </div>
             </div>
           </li>
