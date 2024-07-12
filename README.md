@@ -1,6 +1,6 @@
 # Open-Source Recommender
 
-![alt text](public/application.png)
+![application](public/application.png)
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
