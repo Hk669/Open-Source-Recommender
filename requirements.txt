@@ -27,6 +27,7 @@ mdurl==0.1.2
 motor==3.5.0
 multidict==6.0.5
 orjson==3.10.5
+openai==1.35.13
 pydantic==2.7.4
 pydantic_core==2.18.4
 Pygments==2.18.0
