@@ -6,20 +6,11 @@ import logging
 from typing import List
 from datetime import datetime, timezone
 from src.models import RepositoryRecommendation
-from openai import AzureOpenAI
+from src.oai import generate_embeddings
 from dotenv import load_dotenv
-import chromadb.utils.embedding_functions as embedding_functions
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-openai_ef = embedding_functions.OpenAIEmbeddingFunction(
-                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-                api_base=os.getenv("AZURE_OPENAI_ENDPOINT"),
-                api_type="azure",
-                api_version="2024-02-01",
-                model_name="text-embedding-3-small"
-            )
 
 
 def recommend(user_details, 
@@ -30,20 +21,20 @@ def recommend(user_details,
     recommended_repos = set()
 
     collection = get_chromadb_collection()
-    languages_topics = languages_topics["languages"] + languages_topics["topics"]
+    lang_topics = languages_topics["languages"] + languages_topics["topics"]
     for user_proj in user_details:
-        new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
+        new_doc = f"{user_proj['project_name']} : {user_proj['description']} : {lang_topics}"
         
-        print(f"Querying ChromaDB for project: {user_proj}")
+        # print(f"Querying ChromaDB for project: {user_proj}")
+        embeddings = generate_embeddings(new_doc)
+        # print(f"Embeddings: {embeddings}")
         results = collection.query(
-            query_texts = [new_doc],
+            query_embeddings = [embeddings],
             n_results = 10,
-            where = {
-                "related_language_or_topic": {"$in": languages_topics}
-            }
         )
+
         logging.info(f"UserProject: {user_proj}, Repositories: {results}")
-        print(f"UserProject: {user_proj}, Repositories: {results}")
+        # print(f"UserProject: {user_proj}, Repositories: {results}")
         if results['documents'][0]:
             # Extract repository names and construct GitHub URLs
             ids = results["ids"][0]
@@ -92,8 +83,10 @@ def recommend_by_topics(topics: List[str],
     collection = get_chromadb_collection()
 
     logger.info(f"Querying ChromaDB for topics: {topics}")
+    embeddings = [generate_embeddings(topic) for topic in topics]
+
     results = collection.query(
-        query_texts=topics,
+        query_embeddings=embeddings,
         n_results=max_recommendations * 2,  # Get more results to allow for filtering
         where={"related_language_or_topic": {"$in": topics}}
     )
@@ -160,7 +153,7 @@ def get_chromadb_collection():
         db_path = os.path.join(project_dir, "chroma")
 
         client = chromadb.PersistentClient(path=db_path)
-        collection = client.get_or_create_collection("projects", embedding_function=openai_ef)
+        collection = client.get_or_create_collection("projects")
         return collection
     except DatabaseError as e:
         raise Exception(f"Error in getting collection: {e}")
@@ -172,6 +165,7 @@ def upsert_to_chroma_db(collection, unique_repos):
     ids = []
     documents = []
     metadatas = []
+    embeddings = []
     
     for repo_id, repo_data in unique_repos.items():
         # Extract data from repo_data with default values or handling None
@@ -194,7 +188,8 @@ def upsert_to_chroma_db(collection, unique_repos):
         
         # Append data to respective lists for upsert
         ids.append(str(repo_id))
-        documents.append(f"{full_name}\n{description}")
+        document = f"{full_name}\n{description}\n{topics}"
+        documents.append(document)
         
         # Prepare metadata dictionary
         metadata = {
@@ -212,11 +207,14 @@ def upsert_to_chroma_db(collection, unique_repos):
         
         # Add metadata to the list
         metadatas.append(metadata)
+        embed_doc = generate_embeddings(document)
+        embeddings.append(embed_doc)
     
     try:
         # Upsert data to the collection
         collection.add(
             ids=ids,
+            embeddings=embeddings,
             documents=documents,
             metadatas=metadatas
         )
@@ -246,3 +244,21 @@ def convert_to_readable_format(time_str):
 if __name__ == "__main__":
     collection = get_chromadb_collection()
     print(collection)
+
+    user_details = [
+    {'project_name': 'blog', 'description': 'my understanding/ works', 'related_language_or_topic': ['Dockerfile']},
+    {'project_name': 'bpetokenizer', 'description': '(py package) train your own tokenizer based on BPE algorithm for the LLMs (supports the regex pattern and special tokens)', 'related_language_or_topic': ['Jupyter Notebook', 'Python']},
+    {'project_name': 'HacksArena', 'description': "The django based application classifies user intents using a bag-of-words approach. It predicts intents based on the user's input, retrieves a random response from a predefined set of responses associated with each intent, and generates the appropriate reply.", 'related_language_or_topic': ['Python', 'CSS', 'JavaScript', 'HTML']}
+]
+
+    languages_topics = {
+        'languages': ['Python', 'JavaScript'],
+        'topics': ['agentic-ai', 'openai']
+    }
+    try:
+        recommendations = recommend(user_details, languages_topics)
+        logger.info(recommendations)
+        print('--------')
+        print(recommendations)
+    except Exception as e:
+        print(f"Error Recommending data: {e}")

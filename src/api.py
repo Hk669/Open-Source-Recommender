@@ -4,7 +4,7 @@ import requests
 import logging
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -160,22 +160,22 @@ async def preflight_verify_token():
 
 
 @app.post('/api/recommendations/')
-async def get_recommendations(current_user: dict = Depends(get_current_user)) -> dict:
+async def get_recommendations(request: Request, current_user: dict = Depends(get_current_user)) -> dict:
     try:
+        body = await request.json()
+        extra_topics = body.get("extra_topics", [])
+        languages = body.get("languages", [])
+        username = body.get("username", current_user.get("username"))
         urls = []
-        user = User(username=current_user["username"], access_token=current_user["access_token"])
-        print(user)
-        print('-----\nFetching User Details\n-----')
+        user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, extra_languages=languages)
+
         user_details, language_topics = await get_repos(user)
-        print(user_details)
         if not user_details:
             logger.info("No repos found for user")
             logger.info("Generating topic-based recommendations")
             return get_topic_based_recommendations(user)
-        fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=current_user.get("extra_topics", []), extra_languages=current_user.get("languages", []))
         
         try:
-            print('-----\nGenerating Recommendations\n-----')
             urls = recommend(user_details, language_topics)
         except Exception as e:
             logger.error(f"Error generating recommendations: {str(e)}")
@@ -183,15 +183,23 @@ async def get_recommendations(current_user: dict = Depends(get_current_user)) ->
             return get_topic_based_recommendations(user)
 
         if urls and len(urls) < 10:
-            print('-----\nFetching More Repositories\n-----')
             logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=current_user.get("extra_topics", []), extra_languages=current_user.get("languages", []))
+            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
             urls = recommend(user_details, language_topics)
 
-        if not urls:
+        seen_full_names = set()
+        unique_recommendations = []
+
+        for rec in urls:
+            full_name = rec.get("full_name")
+            if full_name not in seen_full_names:
+                seen_full_names.add(full_name)
+                unique_recommendations.append(rec)
+
+        if not unique_recommendations:
             return {'recommendations': [], 'message': 'No recommendations found'}
         
-        return {'recommendations': urls}
+        return {'recommendations': unique_recommendations}
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
