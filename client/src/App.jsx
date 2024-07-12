@@ -33,7 +33,7 @@ function App() {
           if (response.ok) {
             const data = await response.json();
             setIsAuthenticated(true);
-            setUserData(data); // The backend now returns only necessary user information
+            setUserData(data);
             navigate("/recommender");
           } else {
             localStorage.removeItem("jwt_token");
@@ -67,44 +67,44 @@ function App() {
     navigate("/login");
   };
 
-    return (
-      <div className="App">
-        <Navbar isAuthenticated={isAuthenticated} userData={userData} onLogout={handleLogout} />
-        <div className="app-container">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/auth-callback" element={<GithubCallback />} />
-            <Route
-              path="/recommender"
-              element={
-                isAuthenticated ? (
-                  <>
-                    <div className={`form-container ${recommendations.length > 0 ? "with-recommendations" : ""}`}>
-                      <Input onSubmit={handleSubmit} userData={userData} />
-                    </div>
-                    <div className={`recommendations-container ${recommendations.length > 0 ? "visible" : ""}`}>
-                      {loading ? (
-                        <div className="loading-container">
-                          <div className="loader"></div>
-                          <p>Loading recommendations...</p>
-                        </div>
-                      ) : recommendations.length > 0 ? (
-                        <Recommendation recommendations={recommendations} />
-                      ) : null}
-                    </div>
-                  </>
-                ) : (
-                  <Login />
-                )
-              }
-            />
-            <Route path="*" element={<Login />} />
-          </Routes>
-        </div>
-        <ToastContainer />
-        <Footer />
+  return (
+    <div className="App">
+      <Navbar isAuthenticated={isAuthenticated} userData={userData} onLogout={handleLogout} />
+      <div className="app-container">
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth-callback" element={<GithubCallback />} />
+          <Route
+            path="/recommender"
+            element={
+              isAuthenticated ? (
+                <>
+                  <div className={`form-container ${recommendations.length > 0 ? "with-recommendations" : ""}`}>
+                    <Input onSubmit={handleSubmit} userData={userData} />
+                  </div>
+                  <div className={`recommendations-container ${recommendations.length > 0 ? "visible" : ""}`}>
+                    {loading ? (
+                      <div className="loading-container">
+                        <div className="loader"></div>
+                        <p>Loading recommendations...</p>
+                      </div>
+                    ) : recommendations.length > 0 ? (
+                      <Recommendation recommendations={recommendations} />
+                    ) : null}
+                  </div>
+                </>
+              ) : (
+                <Login />
+              )
+            }
+          />
+          <Route path="*" element={<Login />} />
+        </Routes>
       </div>
-    );
-  };
+      <ToastContainer />
+      <Footer />
+    </div>
+  );
+}
 
 export default App;

@@ -33,3 +33,6 @@ jobs:
                 GITHUB_CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
                 MONGODB_URL: ${{ secrets.MONGODB_URL }}
                 GPAT: ${{ secrets.GPAT }}
+                AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+                AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+                AZURE_DEPLOYMENT: ${{ secrets.AZURE_DEPLOYMENT }}

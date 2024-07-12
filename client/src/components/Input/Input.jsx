@@ -21,10 +21,20 @@ const Input = ({ onSubmit }) => {
       return;
     }
 
+    if (!username) {
+      toast.error("GitHub username is required.", {
+        position: "top-right",
+      });
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const response = await axios.post(
         `http://127.0.0.1:8000/api/recommendations/`,
         {
+          username: username,
           languages: languages,
           extra_topics: extraTopics,
         },
@@ -153,6 +163,7 @@ const Input = ({ onSubmit }) => {
       <button type="submit" disabled={loading}>
         {loading ? "Fetching Recommendations..." : "Get Recommendations"}
       </button>
+      <p>*Open Source Recommender can make mistakes</p>
     </form>
   );
 };

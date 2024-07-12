@@ -42,8 +42,12 @@ form button {
 }
 
 form button:hover {
-    background-color: #ffffff;
-    color:#000000;
+    text-decoration: none;
+    background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+    -webkit-text-fill-color: white;
+
+    font-weight: 500;
+    cursor: pointer;
 }
 
 h2 {
@@ -96,15 +100,23 @@ ul li a:hover {
   width: 90%;
 }
 
+p {
+    font-size: x-small;
+    color:#9b9696
+}
+
 .tag {
   background-color: #bdc7ea;
-  border-radius: 16px;
+  border-radius: 10px;  
   padding: 5px 10px;
   margin-top: 10px;
   margin-right: 5px;
   margin-bottom: 5px;
   display: flex;
   align-items: center;
+  height: 30px;
+  font-size: smaller;
+  cursor: default; /* Ensure the cursor is not a pointer */
 }
 
 .tag button {
@@ -112,6 +124,9 @@ ul li a:hover {
   border: none;
   cursor: pointer;
   font-size: 16px;
-  margin-left: 5px;
   padding: 0;
+  margin-left: 5px; /* Space between text and button */
+  line-height: 1; /* Prevent button from changing height */
+  /* Optional: set a width if needed */
+  width: 20px; /* Or adjust as necessary */
 }

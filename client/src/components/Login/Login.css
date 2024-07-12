@@ -13,8 +13,8 @@
 }
 
 .github-login-button:hover {
-  background: linear-gradient(to right, #9181f4 -40%, #fffa64 140%);
-  -webkit-text-fill-color: black;
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  -webkit-text-fill-color: rgb(255, 255, 255);
   cursor: pointer;
 }
 
@@ -40,6 +40,7 @@ h3 {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin-top: 20px;
   padding-left: 50px;
+  padding-right: 50px;
 }
 
 .features-container ul li:hover {
@@ -55,4 +56,14 @@ h3 {
 .features-container ul {
   list-style-type: none;
   padding: 10px;
+}
+
+.login-container p{
+  font-size: 1.2rem;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+}
+
+.login-container {
+  margin-left: 3rem;
 }

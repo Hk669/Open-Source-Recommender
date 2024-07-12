@@ -123,6 +123,7 @@ async def main(language_topics,
         results = await asyncio.gather(*tasks)
         for result in results:
             unique_repos.update(result)
+        print(f"Unique Repositories: {unique_repos}")
     
     logger.info(f"Found {len(unique_repos)} unique repositories\n--------")
 
