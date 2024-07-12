@@ -13,9 +13,7 @@ from datetime import timedelta, datetime
 import uvicorn
 from .user_data import get_repos
 from src.db import (recommend, 
-                    get_topic_based_recommendations, 
-                    get_chromadb_collection, 
-                    upsert_to_chroma_db)
+                    get_topic_based_recommendations)
 from src.models import User, GithubUser, get_user_collection
 
 load_dotenv()
@@ -165,7 +163,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         body = await request.json()
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
-        username = body.get("username", current_user.get("username"))
+
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, extra_languages=languages)
 
@@ -176,6 +174,13 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
             return get_topic_based_recommendations(user)
         
         try:
+            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
+            logger.info(f"Fetched {len(fetched_repos)} repositories")
+        except Exception as e:
+            logger.error(f"Error fetching repositories: {str(e)}")
+            raise ValueError("Error fetching repositories")
+        
+        try:
             urls = recommend(user_details, language_topics)
         except Exception as e:
             logger.error(f"Error generating recommendations: {str(e)}")
@@ -184,7 +189,6 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
 
         if urls and len(urls) < 10:
             logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
             urls = recommend(user_details, language_topics)
 
         seen_full_names = set()
