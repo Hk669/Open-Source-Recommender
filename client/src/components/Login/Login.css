@@ -31,6 +31,53 @@ h3 {
 
 }
 
+.how-container {
+  display: flex;
+  gap: 4rem;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  padding-left: 50px;
+  padding-right: 50px;
+
+}
+
+.image-container {
+  max-width: 50%; /* Adjust the size as needed */
+  margin-top: 90px;
+  max-height: 500px;
+  overflow: hidden;
+}
+
+.image-container img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 4px;
+  box-shadow: #24292e;
+}
+
+.image-container img:hover {
+  box-shadow: 2px 3px 10px rgba(0, 0, 0, 0.1);
+}
+
+.how-container ul li:hover {
+  text-decoration: none;
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.how-container ul {
+  list-style-type: none;
+  padding: 10px;
+}
+
 .features-container {
   display: flex;
   gap: 4rem;
