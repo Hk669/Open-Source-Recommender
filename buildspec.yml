@@ -1,0 +1,15 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - cd /client
+      - npm install
+  build:
+    commands:
+      - npm run build
+
+  post_build:
+    commands:
+      - aws s3 cp --recursive /client/build s3://ossrec
+      # - aws cloudfront create-invalidation --distribution-id E1A2B3C4D5E6F7 --paths "/*"
