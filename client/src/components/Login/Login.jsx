@@ -6,8 +6,6 @@ import appImage from "../../assets/application.png";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
-const API_URL = process.env.REACT_APP_API_URL;
-
 const Login = () => {
   const handleLogin = () => {
     window.location.href = `${API_URL}/github-login`;
