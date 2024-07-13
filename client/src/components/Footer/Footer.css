@@ -1,10 +1,26 @@
+/* Ensure body and html take up the full height */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Wrapper to ensure full height with flexbox */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Full viewport height */
+}
+
+/* Main content area should flex to take up available space */
+.content {
+  flex: 1;
+}
+
+/* Footer styles */
 .footer {
   background-color: white;
   padding: 20px 0;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
   width: 100%;
 }
 
@@ -19,7 +35,7 @@
 
 .footer-content p {
   color: #858585;
-  
+  font-size: small;
 }
 
 .footer-content a {

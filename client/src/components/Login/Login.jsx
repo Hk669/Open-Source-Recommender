@@ -2,6 +2,9 @@
 import React from "react";
 import "./Login.css";
 import { FaGithub } from "react-icons/fa";
+import appImage from "../../assets/application.png";
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -34,7 +37,7 @@ const Login = () => {
             <li>
               <strong>Personalized Recommendations:</strong> Get matched with
               the best open-source repositories based on your GitHub profile and
-              current projects in Discord.
+              current projects.
             </li>
             <li>
               <strong>Optional Preferences:</strong> Customize your
@@ -57,6 +60,11 @@ const Login = () => {
           <h2>Why Choose Open Source Recommender?</h2>
           <ul>
             <li>
+              <strong>Relevancy:</strong> Ive seen goodfirstissues, but the
+              problem is that they are not always relevant to my skills and
+              interests.
+            </li>
+            <li>
               <strong>Efficiency:</strong> Save time finding projects that match
               your skills and interests.
             </li>
@@ -76,6 +84,37 @@ const Login = () => {
       <br />
 
       <br></br>
+
+      <div className="how-container">
+        <div className="how">
+          <h2>How It Works:</h2>
+          <ul>
+            <li>
+              <strong>Connect Your GitHub Account:</strong>
+              <br></br> Click the "Connect Your GitHub" button above to link
+              your GitHub account.
+            </li>
+            <li>
+              <strong>Customize Your Preferences:</strong>
+              <br></br> Specify your preferred programming languages and
+              additional topics to refine your recommendations.
+            </li>
+            <li>
+              <strong>Get Recommendations:</strong>
+              <br></br> Click "Get Recommendations" to receive a list of
+              open-source repositories tailored to your profile and preferences.
+            </li>
+            <li>
+              <strong>Explore and Contribute:</strong>
+              <br></br> Browse through the recommended projects and start
+              contributing to the open-source community.
+            </li>
+          </ul>
+        </div>
+        <div className="image-container">
+          <img src={appImage} alt="Application"/>
+        </div>
+      </div>
     </div>
   );
 };
