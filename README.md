@@ -4,7 +4,9 @@
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
-Search your next contribution to open source easily! A free web app is here to help every developer find cool open-source projects of interest that fit their skillset. Just enter your GitHub username; our intelligent recommender system will do the rest.
+Search your next contribution to open source easily! A free web app is here to help every developer find cool open-source projects of interest that fit their skillset. Just enter your GitHub username; our intelligent recommender system will do the rest. 
+
+Give it a star⭐, if you support my intiative to help beginners start with open source!
 
 ## Why Use Open-Source Recommender
 
@@ -33,6 +35,8 @@ Search your next contribution to open source easily! A free web app is here to h
 - **Smart Recommendations**: It fits appropriate projects to each user using robust algorithms.
 - **Diverse Project Pool**: Multiple projects from different domains and projects which are of any difficulty level
 - **Quick Access**: There are multiple direct links to recommended projects to access them fast.
+
+feel free to drop your suggestions and issues at [Discussions](https://github.com/Hk669/Open-Source-Recommender/discussions/12)
 
 ## Get Started
 
