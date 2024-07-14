@@ -15,11 +15,16 @@ Search your next contribution to open source easily! A free web app is here to h
 
 ## How It Works
 
-1. Input your GitHub username
-2. Indicate your preferred programming languages and topics of Interest *Optional*
-3. Get a personalized list of open source projects matching your profile *Optional*
+![architecture](/public/architecture.png)
 
-the app analyzes your Github repositories against the vast database of open source projects from github to provide the best recommended match.
+1. Retrives user repositories details which include, _languages_, _topics_, and _description_
+2. Collects the best open source projects from the GitHub based on user's topics and languages
+3. Processes the open source repositories through the _embedding model_ deployed in the _Azure OpenAI Studio_
+4. Stores the resulting embeddings in _ChromaDB_ (VectorStore)
+5. Converts the user's repository languages, topics, and descriptions into embeddings using the embedding model
+6. Perform a _similarity search_ with the embeddings to find the most relevant open source projects
+7. Delivers _personalized recommendations_ to the client
+
 
 ## Features
 
