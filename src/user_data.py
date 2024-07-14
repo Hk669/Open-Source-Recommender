@@ -34,8 +34,14 @@ async def get_repos(user):
             url = f'/users/{user.username}/repos'
             repos_data = await octokit.request('GET', url)
 
+            repo_limit = 15
+            cnt = 0
+
             # iterates through every repository of the user data
             for repo in repos_data:
+                if cnt >= repo_limit:
+                    break
+                
                 if not repo['fork'] and (repo['description'] or repo['language'] or len(repo['topics'])>0):
                     language_url = repo['languages_url'].replace('https://api.github.com', '')
                     languages_data = await octokit.request('GET', language_url)
@@ -52,6 +58,8 @@ async def get_repos(user):
 
                     for topic in repo['topics']:
                         topics_map[topic] = topics_map.get(topic, 0) + 1
+                    
+                    cnt += 1
 
             # return the top5 languages
             top5_languages = user.languages + sorted(languages_map, key=languages_map.get, reverse=True)[:5] if user.languages else sorted(languages_map, key=languages_map.get, reverse=True)[:5]
