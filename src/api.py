@@ -165,23 +165,23 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         languages = body.get("languages", [])
 
         urls = []
-        user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, extra_languages=languages)
+        user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
 
         user_details, language_topics = await get_repos(user)
         if not user_details:
             logger.info("No repos found for user")
             logger.info("Generating topic-based recommendations")
-            return get_topic_based_recommendations(user)
+            return await get_topic_based_recommendations(user)
+        
+        # try:
+        #     fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
+        #     logger.info(f"Fetched {len(fetched_repos)} repositories")
+        # except Exception as e:
+        #     logger.error(f"Error fetching repositories: {str(e)}")
+        #     raise ValueError("Error fetching repositories")
         
         try:
-            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-            logger.info(f"Fetched {len(fetched_repos)} repositories")
-        except Exception as e:
-            logger.error(f"Error fetching repositories: {str(e)}")
-            raise ValueError("Error fetching repositories")
-        
-        try:
-            urls = recommend(user_details, language_topics)
+            urls = await recommend(user_details=user_details, languages_topics=language_topics)
         except Exception as e:
             logger.error(f"Error generating recommendations: {str(e)}")
             logger.info("Generating topic-based recommendations")
@@ -189,7 +189,8 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
 
         if urls and len(urls) < 10:
             logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-            urls = recommend(user_details, language_topics)
+            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
+            urls = await recommend(user_details=user_details, languages_topics=language_topics)
 
         seen_full_names = set()
         unique_recommendations = []
@@ -203,7 +204,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         if not unique_recommendations:
             return {'recommendations': [], 'message': 'No recommendations found'}
         
-        return {'recommendations': unique_recommendations}
+        return {'recommendations': unique_recommendations[::-1]}
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")

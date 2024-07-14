@@ -13,129 +13,105 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 
 
-def recommend(user_details, 
-              languages_topics) -> List[RepositoryRecommendation]:
-    """generate recommendations for the user"""
+async def recommend(user_details=None, 
+              languages_topics=None, 
+              topics=None, 
+              max_recommendations=15) -> List[RepositoryRecommendation]:
+    """Generate recommendations for users based on projects or topics."""
 
     recommendations = []
     recommended_repos = set()
 
     collection = get_chromadb_collection()
-    lang_topics = languages_topics["languages"] + languages_topics["topics"]
-    for user_proj in user_details:
-        new_doc = f"{user_proj['project_name']} : {user_proj['description']} : {lang_topics}"
-        
-        # print(f"Querying ChromaDB for project: {user_proj}")
-        embeddings = generate_embeddings(new_doc)
-        # print(f"Embeddings: {embeddings}")
+
+
+    if user_details:
+        lang_topics = languages_topics["languages"] + languages_topics["topics"]
+        for user_proj in user_details:
+            new_doc = f"{user_proj['project_name']} : {user_proj['description']} : {lang_topics}"
+            embeddings = generate_embeddings(new_doc)
+
+            results = collection.query(
+                query_embeddings=[embeddings],
+                n_results=5,
+                include=["metadatas", "distances"]
+            )
+
+            if results['metadatas'][0]:
+                metadatas = results["metadatas"][0]
+
+                for metadata in metadatas:
+                    repo_name = metadata.get("full_name")
+                    if '/' in repo_name:
+                        repo_url = f"https://github.com/{repo_name}"
+                        if repo_url not in recommended_repos:
+                            recommendations.append({
+                                "repo_url": repo_url,
+                                "full_name": metadata.get("full_name"),
+                                "description": metadata.get("description"),
+                                "stargazers_count": metadata.get("stargazers_count"),
+                                "forks_count": metadata.get("forks_count"),
+                                "open_issues_count": metadata.get("open_issues_count"),
+                                "avatar_url": metadata.get("avatar_url"),
+                                "language": metadata.get("language"),
+                                "updated_at": metadata.get("updated_at"),
+                                "topics": metadata.get("topics", [])
+                            })
+                            recommended_repos.add(repo_url)
+                    if len(recommendations) >= max_recommendations:
+                        break
+            else:
+                logger.info(f"No recommendations found for project {user_proj['project_name']}")
+
+    if topics:
+        logger.info(f"Querying ChromaDB for topics: {topics}")
+        embeddings = [generate_embeddings(topic) for topic in topics]
+
         results = collection.query(
-            query_embeddings = [embeddings],
-            n_results = 10,
+            query_embeddings=embeddings,
+            n_results=8,  # Get more results to allow for filtering
+            include=["ids", "metadatas"]
         )
 
-        logging.info(f"UserProject: {user_proj}, Repositories: {results}")
-        # print(f"UserProject: {user_proj}, Repositories: {results}")
+        logger.info(f"Recommendation results: {results}")
         if results['documents'][0]:
-            # Extract repository names and construct GitHub URLs
-            ids = results["ids"][0]
-            i = 0
-            for doc in results['documents'][0]:
-                repo_name = doc.split('\n')[0]  # Get the part before the first newline
-                if '/' in repo_name:  # Ensure it's a valid repo name
-                    repo_url = f"https://github.com/{repo_name}"
-                    if repo_url not in recommended_repos:
-                        try:
-                            repo_details = collection.get(ids=[ids[i]])
-                            metadata = repo_details.get("metadatas")[0]
-                        except Exception as e:
-                            logging.error(f"Error getting repo details: {str(e)}")
+                metadatas = results["metadatas"][0]
 
-                        if metadata:
+                for metadata in metadatas:
+                    repo_name = metadata.get("full_name")
+                    if '/' in repo_name:
+                        repo_url = f"https://github.com/{repo_name}"
+                        if repo_url not in recommended_repos:
                             recommendations.append({
-                            "repo_url": repo_url,
-                            "full_name": metadata.get("full_name"),
-                            "description": metadata.get("description"),
-                            "stargazers_count": metadata.get("stargazers_count"),
-                            "forks_count": metadata.get("forks_count"),
-                            "open_issues_count": metadata.get("open_issues_count"),
-                            "avatar_url": metadata.get("owner", {}).get("avatar_url"),
-                            "language": metadata.get("language"),
-                            "updated_at": metadata.get("updated_at"),
-                            "topics": metadata.get("topics", [])
-                        })
-                        recommended_repos.add(repo_url)
-                        i+=1
-                        if len(recommendations) >= 15:
-                            break
-                    else:
-                        logger.error(f"Repository details not found for {repo_name}")
+                                "repo_url": repo_url,
+                                "full_name": metadata.get("full_name"),
+                                "description": metadata.get("description"),
+                                "stargazers_count": metadata.get("stargazers_count"),
+                                "forks_count": metadata.get("forks_count"),
+                                "open_issues_count": metadata.get("open_issues_count"),
+                                "avatar_url": metadata.get("avatar_url"),
+                                "language": metadata.get("language"),
+                                "updated_at": metadata.get("updated_at"),
+                                "topics": metadata.get("topics", [])
+                            })
+                            recommended_repos.add(repo_url)
+                    if len(recommendations) >= max_recommendations:
+                                break
         else:
             logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
-    return recommendations
-
-
-def recommend_by_topics(topics: List[str], 
-                        max_recommendations: int = 7) -> List[RepositoryRecommendation]:
-    """Generate recommendations based on given topics"""
-    recommendations = []
-    recommended_repos = set()
-    collection = get_chromadb_collection()
-
-    logger.info(f"Querying ChromaDB for topics: {topics}")
-    embeddings = [generate_embeddings(topic) for topic in topics]
-
-    results = collection.query(
-        query_embeddings=embeddings,
-        n_results=max_recommendations * 2,  # Get more results to allow for filtering
-        where={"related_language_or_topic": {"$in": topics}}
-    )
-    logger.info(f"Recommendation results: {results}")
-    if results['documents'][0]:
-        ids = results["ids"][0]
-        i = 0
-        for doc in results['documents'][0]:
-            repo_name = doc.split('\n')[0]  # Get the part before the first newline
-            if '/' in repo_name:  # Ensure it's a valid repo name
-                repo_url = f"https://github.com/{repo_name}"
-                if repo_url not in recommended_repos:
-                    try:
-                        repo_details = collection.get(ids=[ids[i]])
-                        metadata = repo_details.get("metadatas")[0]
-                    except Exception as e:
-                        logging.error(f"Error getting repo details: {str(e)}")
-
-                    if metadata:
-                        recommendations.append({
-                            "repo_url": repo_url,
-                            "full_name": metadata.get("full_name"),
-                            "description": metadata.get("description"),
-                            "stargazers_count": metadata.get("stargazers_count"),
-                            "forks_count": metadata.get("forks_count"),
-                            "open_issues_count": metadata.get("open_issues_count"),
-                            "avatar_url": metadata.get("owner", {}).get("avatar_url"),
-                            "language": metadata.get("language"),
-                            "updated_at": convert_to_readable_format(metadata.get("updated_at")),
-                            "topics": metadata.get("topics", [])
-                        })
-                    recommended_repos.add(repo_url)
-                    i+=1
-                    if len(recommendations) >= 15:
-                        break
-                    else:
-                        logger.error(f"Repository details not found for {repo_name}")
 
     return recommendations
 
 
-def get_topic_based_recommendations(user):
+async def get_topic_based_recommendations(user):
     all_topics = user.languages + user.extra_topics
     if not all_topics:
         raise ValueError("Please provide at least one language or topic")
     
     # Get recommendations based on topics
     try:
-        urls = recommend_by_topics(all_topics)
+        urls = await recommend(topics=all_topics)
     except Exception as e:
         logger.error(f"Error generating topic-based recommendations: {str(e)}")
         return {'recommendations': [], 'message': 'Error generating recommendations'}
