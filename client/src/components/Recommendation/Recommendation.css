@@ -5,10 +5,17 @@
   padding-bottom: 70px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Include padding and border in width */
+  margin-top: 30px;
 }
 
 .reco-container h2 {
+  margin-left: 1rem;
   margin-bottom: 20px;
+}
+
+.repo-ul a {
+  color: #000000;
 }
 
 .repo-ul {
@@ -39,7 +46,7 @@
 }
 
 .repo-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 4px 4px 8px rgba(9, 109, 224, 0.1);
 }
 
 .repo-info h3 {

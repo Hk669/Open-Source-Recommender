@@ -35,7 +35,13 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
   padding: 0 20px;
+  position: fixed; /* Make the footer stick to the bottom */
+  bottom: 0; /* Align it to the bottom */
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Ensure it appears above other content */
 }
 
 .footer-content p {
