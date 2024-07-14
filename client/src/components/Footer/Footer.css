@@ -31,6 +31,11 @@ body, html {
   background-color: white;
   padding: 20px 0;
   width: 100%;
+  position: fixed; /* Make the footer stick to the bottom */
+  bottom: 0; /* Align it to the bottom */
+  left: 0;
+  right: 0;
+  z-index: 1000; /* Ensure it appears above other content */
 }
 
 .footer-content {

@@ -1,20 +1,32 @@
 import React from "react";
 import "./Recommendation.css";
 import { formatDistanceToNow } from "date-fns";
+import { useEffect, useRef } from "react";
 
 export const Recommendation = ({ recommendations }) => {
+  const recoRef = useRef(null);
+
+  useEffect(() => {
+    if (recommendations.length > 0 && recoRef.current) {
+      recoRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [recommendations]);
+
+
   const timeAgo = (date) =>
     formatDistanceToNow(new Date(date), { addSuffix: true });
 
   return (
-    <div className="reco-container">
+    <div className="reco-container" ref={recoRef}>
       <h2>Recommendations</h2>
       <ul className="repo-ul">
         {recommendations.map((repo, index) => (
           <li key={index}>
             <div className="repo-card">
               <div className="repo-info">
-                <h3>{repo.full_name}</h3>
+                <a href={repo.repo_url}>
+                  <h3>{repo.full_name}</h3>
+                </a>
                 <p>{repo.description}</p>
                 <div className="topics-container">
                   <span>Topics: </span>
