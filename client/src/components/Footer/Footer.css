@@ -1,4 +1,12 @@
 /* Ensure body and html take up the full height */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+  scroll-behavior: smooth;
+}
+
 body, html {
   margin: 0;
   padding: 0;
@@ -15,6 +23,7 @@ body, html {
 /* Main content area should flex to take up available space */
 .content {
   flex: 1;
+  background-color: var(--c-b);
 }
 
 /* Footer styles */
