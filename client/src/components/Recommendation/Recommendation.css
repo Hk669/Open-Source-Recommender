@@ -2,22 +2,37 @@
   background-color: #ffffff;
   padding: 20px;
   padding-bottom: 70px;
+  width: 100%; /* Full width of the parent */
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Include padding and border in width */
 }
 
 .reco-container h2 {
   margin-bottom: 20px;
 }
 
+.repo-ul {
+  width: 100%; /* Ensure the ul takes full width */
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+  list-style-type: none; /* Remove bullet points */
+}
+
+.reco-container li {
+  width: 100%; /* Ensure each li takes full width */
+  margin-bottom: 15px; /* Optional: spacing between items */
+}
 .repo-card {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%; /* Ensures the card takes full width */
   padding: 15px;
   border: 1px solid #ddd;
   border-radius: 8px;
   transition: box-shadow 0.3s ease;
+  margin-bottom: 15px; /* Optional: Adds space between cards */
 }
 
 .repo-info {
