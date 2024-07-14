@@ -56,9 +56,10 @@ body {
 
 .app-container {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   width: 100%;
-  max-width: 1200px;
+  /* max-width: 1200px; */
   margin-top: auto;
   padding: 20px;
 }
@@ -68,12 +69,12 @@ body {
   transition: width 0.3s ease-in-out;
 }
 
-.form-container.with-recommendations {
+/* .form-container.with-recommendations {
   width: 50%;
-}
+} */
 
 .recommendations-container {
-  width: 45%;
+  width: 100%;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
 }

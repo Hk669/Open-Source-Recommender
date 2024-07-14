@@ -9,7 +9,7 @@ export const Recommendation = ({ recommendations }) => {
   return (
     <div className="reco-container">
       <h2>Recommendations</h2>
-      <ul>
+      <ul className="repo-ul">
         {recommendations.map((repo, index) => (
           <li key={index}>
             <div className="repo-card">

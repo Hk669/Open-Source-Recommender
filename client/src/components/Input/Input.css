@@ -61,7 +61,6 @@ ul {
     list-style-type: none;
     padding: 0;
     width: 100%;
-    max-width: 500px;
     background: white;
     border-radius: 10px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
