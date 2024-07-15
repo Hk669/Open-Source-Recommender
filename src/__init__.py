@@ -18,3 +18,5 @@ from .db import (
     get_chromadb_collection,
     upsert_to_chroma_db
 )
+
+from .settings import *
