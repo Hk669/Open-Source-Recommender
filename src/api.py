@@ -161,8 +161,15 @@ async def preflight_verify_token():
 async def get_recommendations(request: Request, current_user: dict = Depends(get_current_user)) -> dict:
     try:
         body = await request.json()
+        username = body.get("username")
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
+
+        # TODO: v2
+        # try: 
+        #     check_daily_limit(username)
+        # except ValueError as e:
+        #     raise HTTPException(status_code=403, detail=str(e))
 
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
@@ -181,16 +188,17 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         #     raise ValueError("Error fetching repositories")
         
         try:
+            print('Recommending\n\n')
             urls = await recommend(user_details=user_details, languages_topics=language_topics)
         except Exception as e:
             logger.error(f"Error generating recommendations: {str(e)}")
-            logger.info("Generating topic-based recommendations")
-            return get_topic_based_recommendations(user)
+            print("Error: Generating topic-based recommendations")
+            return await get_topic_based_recommendations(user)
 
-        if urls and len(urls) < 10:
+        if urls and len(urls) < 5:
             logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
             fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-            urls = recommend(user_details, language_topics)
+            urls = await recommend(user_details=user_details, languages_topics=language_topics)
 
         seen_full_names = set()
         unique_recommendations = []
@@ -204,6 +212,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         if not unique_recommendations:
             return {'recommendations': [], 'message': 'No recommendations found'}
         
+        # update_daily_limit(username) # updates the daily limit of the user.
         return {'recommendations': unique_recommendations[::-1]}
     except Exception as e:
         logger.error(f"Error: {str(e)}")

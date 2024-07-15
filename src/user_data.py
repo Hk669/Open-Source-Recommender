@@ -11,7 +11,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-GPAT = os.getenv('GPAT')
 
 async def get_repos(user):
     """
@@ -71,15 +70,15 @@ async def get_repos(user):
 
     return user_details, language_topics
 
-if __name__ == '__main__':
-    from .models import User
-    username = 'Hk669'
-    user = User(username=username, access_token=GPAT)
+# if __name__ == '__main__':
+#     from .models import User
+#     username = 'Hk669'
+#     user = User(username=username, access_token=GPAT)
 
-    loop = asyncio.get_event_loop()
-    user_details, language_topics = loop.run_until_complete(get_repos(user))
-    loop.close()
-    print('-----')
-    print(user_details)
-    print('-----')
-    print(language_topics)
+#     loop = asyncio.get_event_loop()
+#     user_details, language_topics = loop.run_until_complete(get_repos(user))
+#     loop.close()
+#     print('-----')
+#     print(user_details)
+#     print('-----')
+#     print(language_topics)

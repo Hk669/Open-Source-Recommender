@@ -3,7 +3,9 @@ import chromadb
 import random
 import os
 import logging
-from typing import List
+import asyncio
+import settings
+from typing import List, Optional
 from datetime import datetime, timezone
 from src.models import RepositoryRecommendation
 from src.oai import generate_embeddings
@@ -39,7 +41,7 @@ async def recommend(user_details=None,
             if results['metadatas'][0]:
                 metadatas = results["metadatas"][0]
 
-                for metadata in metadatas:
+                for metadata in metadatas[:4]: # considering only the top 4 recommendations
                     repo_name = metadata.get("full_name")
                     print('----------------\n Repo Name:', repo_name)
                     print('\n------------------')
@@ -59,13 +61,12 @@ async def recommend(user_details=None,
                                 "topics": metadata.get("topics", [])
                             })
                             recommended_repos.add(repo_url)
-                            print('\n--------------\nRecommendations:', recommendations)
-                    if len(recommendations) >= max_recommendations:
-                        break
+                    # if len(recommendations) >= max_recommendations:
+                    #     break
             else:
                 logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
-    if topics:
+    if topics and not user_details:
         logger.info(f"Querying ChromaDB for topics: {topics}")
         embeddings = [generate_embeddings(topic) for topic in topics]
 
@@ -97,8 +98,8 @@ async def recommend(user_details=None,
                                 "topics": metadata.get("topics", [])
                             })
                             recommended_repos.add(repo_url)
-                            if len(recommendations) >= max_recommendations:
-                                break
+                    if len(recommendations) >= max_recommendations:
+                        break
         else:
             logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
@@ -109,7 +110,7 @@ async def recommend(user_details=None,
 async def get_topic_based_recommendations(user):
     all_topics = user.languages + user.extra_topics
     if not all_topics:
-        raise ValueError("Please provide at least one language or topic")
+        raise ValueError("Please provide at least one language or topic, no projects found on your profile")
     
     # Get recommendations based on topics
     try:
@@ -126,15 +127,19 @@ async def get_topic_based_recommendations(user):
 
 def get_chromadb_collection():
     try:
-        # client = chromadb.PersistentClient(path=r"C:\Users\hrush\OneDrive - Student Ambassadors\Desktop\Open-Source-Recommender\chroma")
-        project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        db_path = os.path.join(project_dir, "chroma")
-
-        client = chromadb.PersistentClient(path=db_path)
-        collection = client.get_or_create_collection("projects")
+        if settings.DEBUG:
+            print('Using local chromadb')
+            project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            db_path = os.path.join(project_dir, "chroma")
+            client = chromadb.PersistentClient(path=db_path)
+        else:
+            client = chromadb.HttpClient(host=os.getenv('CHROMA_HOST'), port=8000)
+            
+        collection = client.get_or_create_collection(name="projects",
+                                                     metadata={"hnsw:space": "cosine"})
         return collection
     except DatabaseError as e:
-        raise Exception(f"Error in getting collection: {e}")
+        raise DatabaseError(f"Error in getting collection: {e}")
 
 
 
@@ -206,7 +211,7 @@ def upsert_to_chroma_db(collection, unique_repos):
     
     except Exception as e:
         # Catch any unexpected errors during upsert
-        raise Exception(f"Unexpected error upserting data to ChromaDB: {e}")
+        raise ValueError(f"Unexpected error upserting data to ChromaDB: {e}")
 
 
 def convert_to_readable_format(time_str):
@@ -219,7 +224,7 @@ def convert_to_readable_format(time_str):
     return readable_time_str
 
 
-if __name__ == "__main__":
+async def main():
     collection = get_chromadb_collection()
     print(collection)
 
@@ -233,10 +238,14 @@ if __name__ == "__main__":
         'languages': ['Python', 'typescript'],
         'topics': ['agentic-ai', 'openai', "GPT", "llm"]
     }
+    topics = ["docker", "kubernetes", "devops"]
     try:
-        recommendations = recommend(user_details, languages_topics)
+        recommendations = await recommend(user_details=user_details, languages_topics=languages_topics, topics=topics)
         # logger.info(recommendations)
         print('--------')
         print(recommendations)
     except Exception as e:
         print(f"Error Recommending data: {e}")
+
+if __name__ == "__main__":
+    asyncio.run(main())

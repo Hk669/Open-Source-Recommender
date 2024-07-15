@@ -75,3 +75,27 @@ class RepositoryRecommendation(BaseModel):
     language: str
     updated_at: str
     topics: str
+
+# TODO: v2
+# def update_daily_limit_to_all_users():
+#     try:
+#         user_collection = db['users']
+#         user_collection.update_many({}, {"$set": {"daily_limit": 2}})
+#     except Exception as e:
+#         logger.error(f"Failed to update daily limit: {str(e)}")
+#         raise ValueError("Failed to update daily limit")
+
+
+# def check_and_update_daily_limit(username: str):
+#     user_collection = db['users']
+#     result = user_collection.find_one_and_update(
+#         {"username": username, "daily_limit": {"$gt": 0}},
+#         {"$inc": {"daily_limit": -1}},
+#         return_document=True
+#     )
+    
+#     if not result:
+#         logger.warning(f"Daily limit exceeded for user: {username}")
+#         raise ValueError("Daily limit exceeded")
+    
+#     return result
