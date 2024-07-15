@@ -1,5 +1,4 @@
 
-https://github.com/user-attachments/assets/4b59117d-c3e0-479e-8be4-52795dc68873
 # Open-Source Recommender
 
 
