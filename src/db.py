@@ -4,7 +4,7 @@ import random
 import os
 import logging
 import asyncio
-import settings
+from .settings import DEBUG
 from typing import List, Optional
 from datetime import datetime, timezone
 from src.models import RepositoryRecommendation
@@ -127,7 +127,7 @@ async def get_topic_based_recommendations(user):
 
 def get_chromadb_collection():
     try:
-        if settings.DEBUG:
+        if DEBUG:
             print('Using local chromadb')
             project_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
             db_path = os.path.join(project_dir, "chroma")
