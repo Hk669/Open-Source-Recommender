@@ -1,6 +1,10 @@
+
+https://github.com/user-attachments/assets/4b59117d-c3e0-479e-8be4-52795dc68873
 # Open-Source Recommender
 
-<video controls src="https://raw.githubusercontent.com/Hk669/Open-Source-Recommender/main/public/demo.mp4" title="Demo"></video>
+
+https://github.com/user-attachments/assets/c4e093ea-2256-4f25-8eeb-2de0e6fc67d8
+
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
