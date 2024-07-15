@@ -1,6 +1,6 @@
 # Open-Source Recommender
 
-<video controls src="public/demo.mp4" title="Demo"></video>
+<video controls src="https://raw.githubusercontent.com/Hk669/Open-Source-Recommender/main/public/demo.mp4" title="Demo"></video>
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
