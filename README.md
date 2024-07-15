@@ -1,6 +1,6 @@
 # Open-Source Recommender
 
-![application](public/application.png)
+<video controls src="public/demo.mp4" title="Demo"></video>
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers.
 
