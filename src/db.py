@@ -133,6 +133,7 @@ def get_chromadb_collection():
             db_path = os.path.join(project_dir, "chroma")
             client = chromadb.PersistentClient(path=db_path)
         else:
+            # docker run -d -p 8000:8000 chromadb/chromadb
             client = chromadb.HttpClient(host=os.getenv('CHROMA_HOST'), port=8000)
             
         collection = client.get_or_create_collection(name="projects",
