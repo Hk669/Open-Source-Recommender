@@ -189,3 +189,7 @@ local_cache
 # workflows
 update_db.yml
 store/
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
