@@ -228,7 +228,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
 @app.route('/api/health', methods=['GET'])
-async def health_check():
+def health_check():
     return {"status": "OK"}
 
 async def run_server():
