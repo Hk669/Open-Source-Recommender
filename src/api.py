@@ -11,6 +11,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import jwt
 from datetime import timedelta, datetime
 import uvicorn
+from fastapi.responses import JSONResponse
 from .user_data import get_repos
 from src.db import (recommend, 
                     get_topic_based_recommendations)
@@ -226,6 +227,9 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
+@app.route('/api/health', methods=['GET'])
+async def health_check():
+    return {"status": "OK"}
 
 async def run_server():
     uvicorn.run(app, host='0.0.0.0', port=8000)
