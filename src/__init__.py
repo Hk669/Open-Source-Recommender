@@ -10,7 +10,8 @@ from .models import (
     User,
     GithubUser,
     RepositoryRecommendation,
-    get_user_collection
+    get_user_collection,
+    append_recommendations_to_db
 )
 from .db import (
     recommend,

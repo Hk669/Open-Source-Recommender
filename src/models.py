@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
+import uuid
 import logging
 from dotenv import load_dotenv
 load_dotenv()
@@ -17,6 +18,9 @@ db = client['github']
 
 async def get_user_collection():
     return db['users']
+
+async def get_recommendations_collection():
+    return db['recommendations']
 
 
 class User(BaseModel):
@@ -75,6 +79,63 @@ class RepositoryRecommendation(BaseModel):
     language: str
     updated_at: str
     topics: str
+
+
+def append_recommendations_to_db(username, recommendations, recommendation_name):
+    try:
+        user_recommenations_coll = db['user_recommendations']
+        recommendations_collection = db['recommendations']
+
+    except Exception as e:
+        logger.error(f"Failed to fetch recommendations from DB: {str(e)}")
+        raise ValueError("Failed to fetch recommendations from DB")
+    
+    recommendation_id = str(uuid.uuid4())
+    try:
+        recommendations_collection.insert_one({
+            "recommendation_id": recommendation_id,
+            "recommendations": recommendations
+        })
+
+    except Exception as e:
+        logger.error(f"Failed to save recommendations to DB: {str(e)}")
+        raise ValueError("Failed to save recommendations to DB")
+
+    try:
+        user_recommenations_coll.update_one(
+            {"username": username},
+            {"$push": {
+                "recommendation_refs": {
+                    "recommendation_id": recommendation_id,
+                    "recommendation_name": recommendation_name
+                }
+            }},
+            upsert=True
+        )
+
+        return recommendation_id
+    except Exception as e:
+        logger.error(f"Failed to save user recommendations to DB: {str(e)}")
+        raise ValueError("Failed to save user recommendations to DB")
+    
+
+def get_recommendation_by_id(recommendation_id):
+    try:
+        recommendations_collection = db['recommendations']
+        recommendation_data = recommendations_collection.find_one({"recommendation_id": recommendation_id})
+        
+        if not recommendation_data:
+            return None
+
+        return {
+            "recommendation_id": recommendation_id,
+            "recommendations": recommendation_data["recommendations"]
+        }
+
+    except Exception as e:
+        logger.error(f"Failed to get recommendation from DB: {str(e)}")
+        raise ValueError("Failed to get recommendation from DB")
+
 
 # TODO: v2
 # def update_daily_limit_to_all_users():
