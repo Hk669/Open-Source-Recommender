@@ -11,6 +11,7 @@ from .models import (
     GithubUser,
     RepositoryRecommendation,
     get_user_collection,
+    append_recommendations_to_db,
     # check_daily_limit
 )
 from .db import (

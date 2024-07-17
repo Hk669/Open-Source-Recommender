@@ -14,7 +14,7 @@ import uvicorn
 from .user_data import get_repos
 from src.db import (recommend, 
                     get_topic_based_recommendations)
-from src.models import User, GithubUser, get_user_collection
+from src.models import User, GithubUser, get_user_collection, append_recommendations_to_db
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -212,8 +212,14 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         if not unique_recommendations:
             return {'recommendations': [], 'message': 'No recommendations found'}
         
+        rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
+
         # update_daily_limit(username) # updates the daily limit of the user.
-        return {'recommendations': unique_recommendations[::-1]}
+        return {
+            'recommendations': unique_recommendations[::-1],
+            'recommendations_id': rec_id
+        }
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
