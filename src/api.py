@@ -17,7 +17,7 @@ from src.db import (recommend,
                     get_topic_based_recommendations)
 from src.models import User, GithubUser, get_user_collection, append_recommendations_to_db
 
-load_dotenv()
+# load_dotenv()
 logger = logging.getLogger(__name__)
 
 
@@ -227,8 +227,8 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
-@app.route('/api/health', methods=['GET'])
-def health_check(request):
+@app.get('/api/health')
+async def health_check(request: Request):
     return JSONResponse({"status": "OK"})
 
 
