@@ -5,6 +5,7 @@ import { FaGithub } from "react-icons/fa";
 import appImage from "../../assets/application.png";
 
 const API_URL = process.env.REACT_APP_API_URL;
+console.log("REACT_APP_API_URL:", API_URL);
 
 const Login = () => {
   const handleLogin = () => {
