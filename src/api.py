@@ -19,6 +19,7 @@ from src.models import User, GithubUser, get_user_collection, append_recommendat
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
