@@ -228,12 +228,9 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
 @app.route('/api/health', methods=['GET'])
-def health_check():
-    return {"status": "OK"}
-
-async def run_server():
-    uvicorn.run(app, host='0.0.0.0', port=8000)
+def health_check(request):
+    return JSONResponse({"status": "OK"})
 
 
 if __name__ == '__main__':
-    asyncio.run(run_server())
+    uvicorn.run("src.api:app", host='0.0.0.0', port=8000, reload=True)
