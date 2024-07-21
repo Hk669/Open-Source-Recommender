@@ -3,6 +3,7 @@ import asyncio
 import requests
 import logging
 import os
+import sys
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,6 +21,18 @@ from src.models import User, GithubUser, get_user_collection, append_recommendat
 # load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
+
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
+
+# Create a detailed log format
+log_format = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+)
+
+# Set the format for handlers
+console_handler.setFormatter(log_format)
+logger.addHandler(console_handler)
 
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -60,13 +73,17 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         user_id = payload.get("user_id")
         if user_id is None:
+            logger.error("Invalid authentication credentials")
             raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     except jwt.PyJWTError:
+        logger.error("Invalid authentication credentials")
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
     user_collection = await get_user_collection()
     user = await user_collection.find_one({"_id": user_id})
+
     if user is None:
+        logger.error("User not found")
         raise HTTPException(status_code=401, detail="User not found")
     return user
 
