@@ -136,7 +136,7 @@ def get_chromadb_collection():
             # docker run -d -p 8000:8000 chromadb/chromadb
             client = chromadb.HttpClient(host=os.getenv('CHROMA_HOST'), port=8000)
             
-        collection = client.get_or_create_collection(name="projects1",
+        collection = client.get_or_create_collection(name="projects",
                                                      metadata={"hnsw:space": "cosine"})
         return collection
     except DatabaseError as e:
@@ -171,8 +171,9 @@ def upsert_to_chroma_db(collection, unique_repos):
         
         
         # Append data to respective lists for upsert
-        id_str = str(repo_id) # for checking if the id already exists
+        ids.append(str(repo_id))
         document = f"{full_name}\n{description}\n{topics}"
+        documents.append(document)
         
         # Prepare metadata dictionary
         metadata = {
@@ -188,22 +189,10 @@ def upsert_to_chroma_db(collection, unique_repos):
             "topics": str(topics)
         }
         
-        #generate embeddings for the document
+        # Add metadata to the list
+        metadatas.append(metadata)
         embed_doc = generate_embeddings(document)
-
-        existing_repo = collection.get(id_str, include=["metadatas"])
-        if existing_repo:
-            collection.update(
-                ids=[id_str],
-                embeddings=[embed_doc],
-                documents=[document],
-                metadatas=[metadata]
-            )
-        else:
-            ids.append(id_str)
-            documents.append(document)
-            metadatas.append(metadata)
-            embeddings.append(embed_doc)
+        embeddings.append(embed_doc)
     
     try:
         # Upsert data to the collection
@@ -215,7 +204,7 @@ def upsert_to_chroma_db(collection, unique_repos):
                 metadatas=metadatas
             )
         
-        logger.info(f"Upserted {len(ids)} repositories to ChromaDB")
+        print(f"Upserted {len(ids)} repositories to ChromaDB")
         return collection
     
     except ValueError as ve:

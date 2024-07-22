@@ -16,7 +16,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename='cron_scripts.log', level=logging.INFO,
+logging.basicConfig(filename='cron_scripts_new.log', level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def main(language_topics,
