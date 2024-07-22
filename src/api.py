@@ -234,7 +234,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
 
         # update_daily_limit(username) # updates the daily limit of the user.
         return {
-            'recommendations': unique_recommendations[::-1],
+            'recommendations': unique_recommendations[::-1][:20],
             'recommendation_id': rec_id
         }
     except Exception as e:
