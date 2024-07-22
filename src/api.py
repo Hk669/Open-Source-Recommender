@@ -22,17 +22,17 @@ from src.models import User, GithubUser, get_user_collection, append_recommendat
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.DEBUG)
+# console_handler = logging.StreamHandler(sys.stdout)
+# console_handler.setLevel(logging.DEBUG)
 
-# Create a detailed log format
-log_format = logging.Formatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
-)
+# # Create a detailed log format
+# log_format = logging.Formatter(
+#     '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+# )
 
-# Set the format for handlers
-console_handler.setFormatter(log_format)
-logger.addHandler(console_handler)
+# # Set the format for handlers
+# console_handler.setFormatter(log_format)
+# logger.addHandler(console_handler)
 
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
