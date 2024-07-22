@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import uuid
 import logging
+import asyncio
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -119,10 +120,10 @@ def append_recommendations_to_db(username, recommendations, recommendation_name)
         raise ValueError("Failed to save user recommendations to DB")
     
 
-def get_recommendation_by_id(recommendation_id):
+async def get_user_recommendation_by_id(recommendation_id):
     try:
         recommendations_collection = db['recommendations']
-        recommendation_data = recommendations_collection.find_one({"recommendation_id": recommendation_id})
+        recommendation_data = await recommendations_collection.find_one({"recommendation_id": recommendation_id})
         
         if not recommendation_data:
             return None
@@ -135,6 +136,20 @@ def get_recommendation_by_id(recommendation_id):
     except Exception as e:
         logger.error(f"Failed to get recommendation from DB: {str(e)}")
         raise ValueError("Failed to get recommendation from DB")
+
+
+async def get_user_previous_recommendations(username: str) -> list:
+    try:
+        # Example query; adjust as per your database schema
+        user_recommendations = await db.user_recommendations.find_one({"username": username})
+        if not user_recommendations:
+            return []
+        
+        # Assuming the recommendations are stored in 'recommendation_refs'
+        return user_recommendations.get("recommendation_refs", [])
+    except Exception as e:
+        logger.error(f"Database query error: {str(e)}")
+        raise
 
 
 # TODO: v2
@@ -160,3 +175,10 @@ def get_recommendation_by_id(recommendation_id):
 #         raise ValueError("Daily limit exceeded")
     
 #     return result
+
+async def main():
+    recommendations = await get_user_previous_recommendations("Hk669")
+    print(recommendations)
+
+if __name__ == "__main__":
+    asyncio.run(main())
