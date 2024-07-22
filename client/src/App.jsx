@@ -10,6 +10,7 @@ import Login from "./components/Login/Login";
 import { useNavigate } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import GithubCallback from "./components/GithubCallback";
+import PreviousRecommendations from "./components/PreviousRecomendations/PreviousRecommendations";
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
@@ -72,7 +73,11 @@ function App() {
 
   return (
     <div className="App">
-      <Navbar isAuthenticated={isAuthenticated} userData={userData} onLogout={handleLogout} />
+      <Navbar
+        isAuthenticated={isAuthenticated}
+        userData={userData}
+        onLogout={handleLogout}
+      />
       <div className="app-container">
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -82,10 +87,18 @@ function App() {
             element={
               isAuthenticated ? (
                 <>
-                  <div className={`form-container ${recommendations.length > 0 ? "with-recommendations" : ""}`}>
+                  <div
+                    className={`form-container ${
+                      recommendations.length > 0 ? "with-recommendations" : ""
+                    }`}
+                  >
                     <Input onSubmit={handleSubmit} userData={userData} />
                   </div>
-                  <div className={`recommendations-container ${recommendations.length > 0 ? "visible" : ""}`}>
+                  <div
+                    className={`recommendations-container ${
+                      recommendations.length > 0 ? "visible" : ""
+                    }`}
+                  >
                     {loading ? (
                       <div className="loading-container">
                         <div className="loader"></div>
@@ -95,6 +108,7 @@ function App() {
                       <Recommendation recommendations={recommendations} />
                     ) : null}
                   </div>
+                  <PreviousRecommendations userData={userData} />
                 </>
               ) : (
                 <Login />
