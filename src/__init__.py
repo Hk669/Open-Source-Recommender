@@ -1,5 +1,6 @@
 from .search import (
-    main
+    main,
+    search_repositories
 )
 from .user_data import get_repos
 from .api import (

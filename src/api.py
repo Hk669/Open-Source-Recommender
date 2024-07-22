@@ -199,13 +199,6 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
             logger.info("Generating topic-based recommendations")
             return await get_topic_based_recommendations(user)
         
-        # try:
-        #     fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-        #     logger.info(f"Fetched {len(fetched_repos)} repositories")
-        # except Exception as e:
-        #     logger.error(f"Error fetching repositories: {str(e)}")
-        #     raise ValueError("Error fetching repositories")
-        
         try:
             print('Recommending\n\n')
             urls = await recommend(user_details=user_details, languages_topics=language_topics)
@@ -214,11 +207,14 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
             print("Error: Generating topic-based recommendations")
             return await get_topic_based_recommendations(user)
 
-        if urls and len(urls) < 5:
-            logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-            fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-            urls = await recommend(user_details=user_details, languages_topics=language_topics)
-
+        # if urls and len(urls) < 5:
+        #     logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
+        #     fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
+        #     urls = await recommend(user_details=user_details, languages_topics=language_topics)
+        if not urls:
+            logger.info("No recommendations found")
+            return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
+        
         seen_full_names = set()
         unique_recommendations = []
 

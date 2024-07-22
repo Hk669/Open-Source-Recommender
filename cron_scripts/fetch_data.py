@@ -1,4 +1,9 @@
+import sys
 import os
+
+# Add the project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import asyncio
 from datetime import datetime
 from aiohttp import ClientSession
@@ -11,6 +16,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(filename='cron_scripts.log', level=logging.INFO,
+                    format='%(asctime)s - %(levelname)s - %(message)s')
 
 async def main(language_topics,
                access_token: str,
@@ -28,7 +35,7 @@ async def main(language_topics,
         
 
         tasks = []
-        print("Fetching repositories using main....")
+        logger.info("Fetching repositories using main....")
         
         for language in languages:
             try:
@@ -44,10 +51,13 @@ async def main(language_topics,
                 help_wanted_params = base_params.copy()
                 help_wanted_params['q'] += ' help-wanted-issues:>2'
                 tasks.append(asyncio.create_task(search_repositories(octokit, help_wanted_params)))
+                await asyncio.sleep(2)
 
                 good_first_issues_params = base_params.copy()
                 good_first_issues_params['q'] += ' good-first-issues:>2'
                 tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
+                await asyncio.sleep(2)
+
             except Exception as e:
                 logger.info(f"Error searching for {language} repositories: {e}")
                 continue
@@ -67,10 +77,13 @@ async def main(language_topics,
                 help_wanted_params = base_params.copy()
                 help_wanted_params['q'] += ' help-wanted-issues:>1'
                 tasks.append(asyncio.create_task(search_repositories(octokit, help_wanted_params)))
+                await asyncio.sleep(2)
 
                 good_first_issues_params = base_params.copy()
                 good_first_issues_params['q'] += ' good-first-issues:>1'
                 tasks.append(asyncio.create_task(search_repositories(octokit, good_first_issues_params)))
+                await asyncio.sleep(2)
+
             except Exception as e:
                 logger.info(f"Error searching for {topic} repositories: {e}")
                 continue
@@ -84,7 +97,7 @@ async def main(language_topics,
 
     chroma_db = get_chromadb_collection()
     try:
-        print("Upserting data to ChromaDB....")
+        logger.info("Upserting data to ChromaDB....")
         upsert_to_chroma_db(chroma_db, unique_repos)
     except Exception as e:
         raise Exception(f"Error upserting data to ChromaDB: {e}")
@@ -93,8 +106,8 @@ async def main(language_topics,
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    access_token = os.getenv("GITHUB_ACCESS_TOKEN")
+    # load_dotenv()
+    access_token = os.getenv("GPAT")
     # mention almost all the languages and topics
 
     language_topics = {
@@ -120,8 +133,10 @@ if __name__ == "__main__":
                    'network', 'networking', 'iot', 'internet-of-things', 'cloud', 'cloud-computing', 'cloud-native']
     }
 
+
     start_time = datetime.now()
     loop = asyncio.get_event_loop()
     result = loop.run_until_complete(main(language_topics, access_token=access_token))
     print(f"Time taken: {datetime.now() - start_time}")
 
+    
