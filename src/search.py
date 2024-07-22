@@ -74,9 +74,7 @@ async def main(language_topics,
         if access_token:
             octokit = Octokit(access_token, session)
         else:
-                # octokit = Octokit(GPAT, session)
             raise ValueError("Access token not found")
-        # octokit = Octokit(GPAT, session)
 
         languages = language_topics["languages"] if language_topics["languages"] else []
         languages = extra_languages + languages if extra_languages else languages
