@@ -197,7 +197,31 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         if not user_details:
             logger.info("No repos found for user")
             logger.info("Generating topic-based recommendations")
-            return await get_topic_based_recommendations(user)
+            urls = await get_topic_based_recommendations(user)
+
+            if not urls:
+                logger.info("No recommendations found with topics based recommendations")
+                return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
+            
+            for rec in urls:
+                full_name = rec.get("full_name")
+                if full_name not in seen_full_names:
+                    seen_full_names.add(full_name)
+                    unique_recommendations.append(rec)
+
+            if not unique_recommendations:
+                return {'recommendations': [], 'message': 'No recommendations found'}
+            
+            rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
+            logger.info(f"Recommendations saved to DB with ID: {rec_id}")
+
+
+            # update_daily_limit(username) # updates the daily limit of the user.
+            return {
+                'recommendations': unique_recommendations[::-1][:20],
+                'recommendation_id': rec_id
+            }
         
         try:
             print('Recommending\n\n')
@@ -205,7 +229,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         except Exception as e:
             logger.error(f"Error generating recommendations: {str(e)}")
             print("Error: Generating topic-based recommendations")
-            return await get_topic_based_recommendations(user)
+            urls = await get_topic_based_recommendations(user)
 
         # if urls and len(urls) < 5:
         #     logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
