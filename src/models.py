@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 from typing import Optional, List
 from motor.motor_asyncio import AsyncIOMotorClient
+from datetime import datetime, timedelta
 import os
 import uuid
 import logging
+import asyncio
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 load_dotenv()
@@ -120,10 +122,24 @@ def append_recommendations_to_db(username, recommendations, recommendation_name)
         raise ValueError("Failed to save user recommendations to DB")
     
 
-def get_recommendation_by_id(recommendation_id):
+async def get_user_previous_recommendations(username: str) -> list:
+    try:
+        # Example query; adjust as per your database schema
+        user_recommendations = await db.user_recommendations.find_one({"username": username})
+        if not user_recommendations:
+            return []
+
+        # Assuming the recommendations are stored in 'recommendation_refs'
+        return user_recommendations.get("recommendation_refs", [])
+    except Exception as e:
+        logger.error(f"Database query error: {str(e)}")
+        raise
+
+
+async def get_user_recommendation_by_id(recommendation_id):
     try:
         recommendations_collection = db['recommendations']
-        recommendation_data = recommendations_collection.find_one({"recommendation_id": recommendation_id})
+        recommendation_data = await recommendations_collection.find_one({"recommendation_id": recommendation_id})
         
         if not recommendation_data:
             return None
@@ -139,25 +155,59 @@ def get_recommendation_by_id(recommendation_id):
 
 
 # TODO: v2
-# def update_daily_limit_to_all_users():
-#     try:
-#         user_collection = db['users']
-#         user_collection.update_many({}, {"$set": {"daily_limit": 2}})
-#     except Exception as e:
-#         logger.error(f"Failed to update daily limit: {str(e)}")
-#         raise ValueError("Failed to update daily limit")
+async def update_daily_limit(username: str) -> bool:
+    try:
+        user_recommendations_coll = db['user_recommendations']
+        now = datetime.now()
+        start_of_day = now.replace(hour=0, minute=0, second=0, microsecond=0)
 
+        # Fetch the user's recommendations
+        user_recommendations = await user_recommendations_coll.find_one({"username": username})
+        
+        # Initialize if no record exists
+        if not user_recommendations:
+            # Initialize user recommendations with a daily limit
+            await user_recommendations_coll.insert_one({
+                "username": username,
+                "recommendation_refs": [],
+                "last_updated": start_of_day,
+                "daily_limit": 2
+            })
+            return True  # Initial limit set
 
-# def check_and_update_daily_limit(username: str):
-#     user_collection = db['users']
-#     result = user_collection.find_one_and_update(
-#         {"username": username, "daily_limit": {"$gt": 0}},
-#         {"$inc": {"daily_limit": -1}},
-#         return_document=True
-#     )
+        last_updated = user_recommendations.get("last_updated", start_of_day)
+        daily_limit = user_recommendations.get("daily_limit", 2)
+
+        # Check if the limit needs to be reset
+        if now - last_updated >= timedelta(days=1):
+            # Reset daily limit and update the timestamp
+            await user_recommendations_coll.update_one(
+                {"username": username},
+                {"$set": {"daily_limit": 2, "last_updated": start_of_day}}
+            )
+            return True  # Limit reset
+
+        # If the limit is zero or less, return False
+        if daily_limit <= 0:
+            return False
+
+        # Decrease the limit if it's still valid
+        await user_recommendations_coll.update_one(
+            {"username": username},
+            {"$inc": {"daily_limit": -1}}
+        )
+
+        return True
+    except Exception as e:
+        logger.error(f"Failed to update daily limit: {str(e)}")
+        return False
+
+async def check_and_update_daily_limit(username: str) -> bool:
+    return await update_daily_limit(username)
     
-#     if not result:
-#         logger.warning(f"Daily limit exceeded for user: {username}")
-#         raise ValueError("Daily limit exceeded")
-    
-#     return result
+async def main():
+    recommendations = await get_user_previous_recommendations("Hk669")
+    print(recommendations)
+
+if __name__ == "__main__":
+    asyncio.run(main())

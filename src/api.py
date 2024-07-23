@@ -5,7 +5,7 @@ import logging
 import os
 import sys
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi import FastAPI, HTTPException, Header, Depends, Request, Query
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -16,7 +16,11 @@ from fastapi.responses import JSONResponse
 from .user_data import get_repos
 from src.db import (recommend, 
                     get_topic_based_recommendations)
-from src.models import User, GithubUser, get_user_collection, append_recommendations_to_db
+from src.models import (User, 
+                        GithubUser, 
+                        get_user_collection, 
+                        append_recommendations_to_db, get_user_previous_recommendations, 
+                        get_user_recommendation_by_id, check_and_update_daily_limit)
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
@@ -184,11 +188,15 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
 
-        # TODO: v2
-        # try: 
-        #     check_daily_limit(username)
-        # except ValueError as e:
-        #     raise HTTPException(status_code=403, detail=str(e))
+        limit_updated = await check_and_update_daily_limit(username)
+        
+        if not limit_updated:
+            logger.warning(f"Daily limit exceeded for user: {username}")
+            return {
+                "success": False,
+                "message": "Reached your daily limit",
+                "recommendations": []
+            }
 
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
@@ -264,6 +272,34 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
+
+
+@app.get('/api/user-recommendations')
+async def get_user_recommendations(username: str = Query(...), current_user: dict = Depends(get_current_user)):
+    try:
+        if username != current_user["username"]:
+            raise HTTPException(status_code=403, detail="Unauthorized access")
+
+        user_recommendations = await get_user_previous_recommendations(username)
+        if not user_recommendations:
+            raise HTTPException(status_code=404, detail="No recommendations found for user")
+        return user_recommendations
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail="An error occurred while fetching user recommendations")
+
+
+@app.get("/api/recommendation/{recommendation_id}")
+async def get_recommendation_by_id(recommendation_id: str):
+    try:
+        recommendation = await get_user_recommendation_by_id(recommendation_id)
+        if not recommendation:
+            raise HTTPException(status_code=404, detail="Recommendation not found")
+        return recommendation
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.get('/api/health')
 async def health_check(request: Request):
