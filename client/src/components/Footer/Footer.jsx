@@ -9,8 +9,21 @@ const Footer = () => {
         <p>
           Developed by{" "}
           <strong>
-            <a href="https://github.com/Hk669">Hrushikesh Dokala</a>
+            <a
+              href="https://github.com/Hk669"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Hrushikesh Dokala
+            </a>
           </strong>
+        </p>
+        <p className="feedback">
+          <a
+            href="https://github.com/Hk669/Open-Source-Recommender/discussions/13"
+            target="_blank"
+            rel="noopener noreferrer"
+          >Feedback</a>
         </p>
         <div className="social-links">
           <a

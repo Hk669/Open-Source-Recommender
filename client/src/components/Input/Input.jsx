@@ -154,7 +154,7 @@ const Input = ({ onSubmit }) => {
         />
       </label>
       <label>
-        Extra Topics:
+        Preferred Topics:
         <div className="tag-container">
           {extraTopics.map((topic, index) => (
             <span key={index} className="tag">
