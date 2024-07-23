@@ -13,8 +13,8 @@ from .models import (
     get_user_collection,
     append_recommendations_to_db,
     get_user_previous_recommendations,
-    get_user_recommendation_by_id
-    # check_daily_limit
+    get_user_recommendation_by_id,
+    check_and_update_daily_limit,
 )
 from .db import (
     recommend,

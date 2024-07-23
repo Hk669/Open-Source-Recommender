@@ -17,7 +17,11 @@ from pymongo import MongoClient
 from .user_data import get_repos
 from src.db import (recommend, 
                     get_topic_based_recommendations)
-from src.models import User, GithubUser, get_user_collection, append_recommendations_to_db, get_user_previous_recommendations, get_user_recommendation_by_id
+from src.models import (User, 
+                        GithubUser, 
+                        get_user_collection, 
+                        append_recommendations_to_db, get_user_previous_recommendations, 
+                        get_user_recommendation_by_id, check_and_update_daily_limit)
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
@@ -189,10 +193,15 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         languages = body.get("languages", [])
 
         # TODO: v2
-        # try: 
-        #     check_daily_limit(username)
-        # except ValueError as e:
-        #     raise HTTPException(status_code=403, detail=str(e))
+        limit_updated = await check_and_update_daily_limit(username)
+        
+        if not limit_updated:
+            logger.warning(f"Daily limit exceeded for user: {username}")
+            return {
+                "success": False,
+                "message": "Reached your daily limit",
+                "recommendations": []
+            }
 
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
