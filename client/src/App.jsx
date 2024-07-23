@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import "./App.css";
 import Input from "./components/Input/Input";
 import { ToastContainer } from "react-toastify";
@@ -7,7 +7,7 @@ import { Recommendation } from "./components/Recommendation/Recommendation";
 import Navbar from "./components/Navbar/Navbar";
 import Footer from "./components/Footer/Footer";
 import Login from "./components/Login/Login";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import GithubCallback from "./components/GithubCallback";
 import PreviousRecommendations from "./components/PreviousRecomendations/PreviousRecommendations";
@@ -17,7 +17,9 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [showInput, setShowInput] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -38,7 +40,7 @@ function App() {
             const data = await response.json();
             setIsAuthenticated(true);
             setUserData(data);
-            navigate("/recommender");
+            if (location.pathname === "/") navigate("/recommender");
           } else {
             localStorage.removeItem("jwt_token");
             navigate("/");
@@ -51,18 +53,7 @@ function App() {
     };
 
     checkAuth();
-  }, [navigate]);
-
-  const handleSubmit = async (inputData) => {
-    setLoading(true);
-    try {
-      setRecommendations(inputData);
-    } catch (error) {
-      console.error("Error fetching recommendations:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [navigate, location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("jwt_token");
@@ -70,6 +61,33 @@ function App() {
     setUserData(null);
     navigate("/login");
   };
+
+  const handleSubmit = async (inputData) => {
+    setLoading(true);
+    try {
+      setRecommendations(inputData);
+      navigate("/recommender");
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePreviousRecommendationSelect = useCallback(
+    (selectedRecommendation, recommendationId) => {
+      setRecommendations(selectedRecommendation);
+      setShowInput(false);
+      navigate(`/recommender/${recommendationId}`);
+    },
+    [navigate]
+  );
+
+  useEffect(() => {
+    if (location.pathname === "/recommender") {
+      setShowInput(true);
+    }
+  }, [location]);
 
   return (
     <div className="App">
@@ -87,18 +105,22 @@ function App() {
             element={
               isAuthenticated ? (
                 <>
-                  <div
-                    className={`form-container ${
-                      recommendations.length > 0 ? "with-recommendations" : ""
-                    }`}
-                  >
-                    <Input onSubmit={handleSubmit} userData={userData} />
+                  <div className="top-row">
+                    {showInput && (
+                      <div className="input-container">
+                        <Input onSubmit={handleSubmit} userData={userData} />
+                      </div>
+                    )}
+                    <div className="previous-recommendations-container">
+                      <PreviousRecommendations
+                        userData={userData}
+                        onSelectPreviousRecommendation={
+                          handlePreviousRecommendationSelect
+                        }
+                      />
+                    </div>
                   </div>
-                  <div
-                    className={`recommendations-container ${
-                      recommendations.length > 0 ? "visible" : ""
-                    }`}
-                  >
+                  <div className="recommendations-container">
                     {loading ? (
                       <div className="loading-container">
                         <div className="loader"></div>
@@ -108,7 +130,37 @@ function App() {
                       <Recommendation recommendations={recommendations} />
                     ) : null}
                   </div>
-                  <PreviousRecommendations userData={userData} />
+                </>
+              ) : (
+                <Login />
+              )
+            }
+          />
+          <Route
+            path="/recommender/:id"
+            element={
+              isAuthenticated ? (
+                <>
+                  <div className="top-row">
+                    <div className="previous-recommendations-container">
+                      <PreviousRecommendations
+                        userData={userData}
+                        onSelectPreviousRecommendation={
+                          handlePreviousRecommendationSelect
+                        }
+                      />
+                    </div>
+                  </div>
+                  <div className="recommendations-container">
+                    {loading ? (
+                      <div className="loading-container">
+                        <div className="loader"></div>
+                        <p>Loading recommendations...</p>
+                      </div>
+                    ) : recommendations.length > 0 ? (
+                      <Recommendation recommendations={recommendations} />
+                    ) : null}
+                  </div>
                 </>
               ) : (
                 <Login />

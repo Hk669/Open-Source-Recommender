@@ -44,7 +44,20 @@ const Input = ({ onSubmit }) => {
           },
         }
       );
-      onSubmit(response.data.recommendations);
+      
+      if (
+        response.data.success === false &&
+        response.data.message === "Reached your daily limit"
+      ) {
+        toast.info(
+          "You have reached your daily limit. Please try again tomorrow.",
+          {
+            position: "top-right",
+          }
+        );
+      } else {
+        onSubmit(response.data.recommendations);
+      }
     } catch (error) {
       if (error.response) {
         toast.error(`${error.response.data.detail}`, {
