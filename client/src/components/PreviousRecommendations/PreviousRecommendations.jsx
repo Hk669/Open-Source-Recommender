@@ -44,7 +44,6 @@ const PreviousRecommendations = React.memo(
 
         if (response.ok) {
           const data = await response.json();
-          console.log(data);
           if (Array.isArray(data)) {
             if (data.length === 0) {
               setError(
@@ -96,7 +95,6 @@ const PreviousRecommendations = React.memo(
           );
           if (response.ok) {
             const data = await response.json();
-            console.log(data);
             setRecommendationDetails((prev) => ({
               ...prev,
               [recommendationId]: data.recommendations || [],
