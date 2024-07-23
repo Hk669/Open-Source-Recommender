@@ -38,3 +38,17 @@
   /* font-weight: 700; */
   cursor: pointer;
 }
+
+.logout-button {
+  background-color: #000000;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.logout-button:hover {
+  background-color: #5b5859;
+}

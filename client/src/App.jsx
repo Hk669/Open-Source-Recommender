@@ -59,7 +59,7 @@ function App() {
     localStorage.removeItem("jwt_token");
     setIsAuthenticated(false);
     setUserData(null);
-    navigate("/login");
+    navigate("/");
   };
 
   const handleSubmit = async (inputData) => {

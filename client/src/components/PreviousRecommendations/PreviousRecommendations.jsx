@@ -95,9 +95,10 @@ const PreviousRecommendations = React.memo(
           );
           if (response.ok) {
             const data = await response.json();
+            const reversedRecommendations = (data.recommendations || []).reverse();
             setRecommendationDetails((prev) => ({
               ...prev,
-              [recommendationId]: data.recommendations || [],
+              [recommendationId]: reversedRecommendations,
             }));
             onSelectPreviousRecommendation(
               data.recommendations || [],

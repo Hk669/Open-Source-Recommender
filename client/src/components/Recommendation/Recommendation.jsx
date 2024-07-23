@@ -24,7 +24,11 @@ export const Recommendation = ({ recommendations }) => {
           <li key={index}>
             <div className="repo-card">
               <div className="repo-info">
-                <a href={repo.repo_url}>
+                <a
+                  href={repo.repo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <h3>{repo.full_name}</h3>
                 </a>
                 <p>{repo.description}</p>
