@@ -1,12 +1,12 @@
 .reco-container {
   background-color: #ffffff;
   padding: 20px;
-  width: 100%;
-  padding-bottom: 70px;
+  /* padding-bottom: 70px; */
+  width: 100%; /* Full width of the parent */
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   box-sizing: border-box; /* Include padding and border in width */
-  margin-top: 30px;
+  /* margin-top: 30px; */
 }
 
 .reco-container h2 {
@@ -41,12 +41,30 @@
   margin-bottom: 15px; /* Optional: Adds space between cards */
 }
 
+.go-back-button {
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 9px 15px;
+  border: #f0f0f0;
+  margin-bottom: 10px;
+}
+
+.go-back-button:hover {
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* -webkit-text-fill-color: transparent; */
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 .repo-info {
   flex: 1;
 }
 
 .repo-card:hover {
-  box-shadow: 4px 4px 8px rgba(9, 109, 224, 0.1);
+  box-shadow: 8px 8px 8px rgba(9, 109, 224, 0.1);
 }
 
 .repo-info h3 {
