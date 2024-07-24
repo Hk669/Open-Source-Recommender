@@ -66,47 +66,47 @@ async def recommend(user_details=None,
 
         # if the number of recommendations is less than max_recommendations,
         # we will also recommend projects based on user's projects
-        if len(recommendations) < max_recommendations+5:
-            for user_proj in user_details:
-                new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
-                embeddings = generate_embeddings(new_doc)
+        # if len(recommendations) < max_recommendations+5:
+        #     for user_proj in user_details:
+        #         new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
+        #         embeddings = generate_embeddings(new_doc)
 
-                try:
-                    results = collection.query(
-                        query_embeddings=[embeddings],
-                        n_results=3,
-                        include=["metadatas", "distances"]
-                    )
-                except DatabaseError as e:
-                    logger.error(f"Error querying ChromaDB: {e}")
-                    return recommendations
+        #         try:
+        #             results = collection.query(
+        #                 query_embeddings=[embeddings],
+        #                 n_results=3,
+        #                 include=["metadatas", "distances"]
+        #             )
+        #         except DatabaseError as e:
+        #             logger.error(f"Error querying ChromaDB: {e}")
+        #             return recommendations
 
-                if results['metadatas'][0]:
-                    metadatas = results["metadatas"][0]
+        #         if results['metadatas'][0]:
+        #             metadatas = results["metadatas"][0]
 
-                    for metadata in metadatas:
-                        repo_name = metadata.get("full_name")
-                        if '/' in repo_name:
-                            repo_url = f"https://github.com/{repo_name}"
-                            if repo_url not in recommended_repos:
-                                recommendations.append({
-                                    "repo_url": repo_url,
-                                    "full_name": metadata.get("full_name"),
-                                    "description": metadata.get("description"),
-                                    "stargazers_count": metadata.get("stargazers_count"),
-                                    "forks_count": metadata.get("forks_count"),
-                                    "open_issues_count": metadata.get("open_issues_count"),
-                                    "avatar_url": metadata.get("avatar_url"),
-                                    "language": metadata.get("language"),
-                                    "updated_at": metadata.get("updated_at"),
-                                    "topics": metadata.get("topics")
-                                })
-                                recommended_repos.add(repo_url)
-                        else:
-                            logger.info("No recommendations found for repos")
+        #             for metadata in metadatas:
+        #                 repo_name = metadata.get("full_name")
+        #                 if '/' in repo_name:
+        #                     repo_url = f"https://github.com/{repo_name}"
+        #                     if repo_url not in recommended_repos:
+        #                         recommendations.append({
+        #                             "repo_url": repo_url,
+        #                             "full_name": metadata.get("full_name"),
+        #                             "description": metadata.get("description"),
+        #                             "stargazers_count": metadata.get("stargazers_count"),
+        #                             "forks_count": metadata.get("forks_count"),
+        #                             "open_issues_count": metadata.get("open_issues_count"),
+        #                             "avatar_url": metadata.get("avatar_url"),
+        #                             "language": metadata.get("language"),
+        #                             "updated_at": metadata.get("updated_at"),
+        #                             "topics": metadata.get("topics")
+        #                         })
+        #                         recommended_repos.add(repo_url)
+        #                 else:
+        #                     logger.info("No recommendations found for repos")
     
     # if the languages and topics are not present, we will recommend projects based on user's projects
-    if user_details and not languages_topics:
+    if user_details and not (languages_topics['languages'] or languages_topics['topics']):
         for user_proj in user_details:
             new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
             embeddings = generate_embeddings(new_doc)
