@@ -7,7 +7,7 @@ import asyncio
 from .settings import DEBUG
 from typing import List, Optional
 from datetime import datetime, timezone
-from src.models import RepositoryRecommendation
+from src.models import RepositoryRecommendation, process_recommendations
 from src.oai import generate_embeddings
 from dotenv import load_dotenv
 load_dotenv()
@@ -26,14 +26,13 @@ async def recommend(user_details=None,
     collection = get_chromadb_collection()
 
     # Get recommendations based on only language_topics if present, otherwise there is no point in collecting the preferred languages and topics
-    if languages_topics:
+    if languages_topics and (languages_topics['languages'] or languages_topics['topics']):
         languages = languages_topics["languages"]
         topics = languages_topics["topics"]
 
         for i, lang in enumerate(languages):
             new_doc = f"{lang} {topics[i]}" if i < len(topics) else lang
             embeddings = generate_embeddings(new_doc)
-
             try:
                 results = collection.query(
                     query_embeddings=[embeddings],
@@ -107,7 +106,7 @@ async def recommend(user_details=None,
 
     if topics and not user_details:
         logger.info(f"Querying ChromaDB for topics: {topics}")
-        topics_doc = f"I write code in {topics}, suggest me the best open-source projects"
+        topics_doc = f"{topics}"
         embeddings = generate_embeddings(topics_doc)
 
         results = collection.query(
@@ -288,11 +287,17 @@ async def main():
         print('--------')
         print(len(recommendations))
         print('--------')
-        for repo in recommendations:
-            print(repo)
-            print('--------\n')
+    #     for repo in recommendations:
+    #         print(repo)
+    #         print('--------\n')
     except Exception as e:
         print(f"Error Recommending data: {e}")
+
+    unique_recommendations = process_recommendations(recommendations, languages_topics)
+
+    for repo in unique_recommendations:
+        print(repo)
+        print('--------\n')
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -202,23 +202,25 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
 
-        user_details, language_topics = await get_repos(user)
+        user_details, languages_topics = await get_repos(user)
         if not user_details:
             logger.info("No repos found for user, generating topic-based recommendations")
             urls = await get_topic_based_recommendations(user)
         else:
             try:
+                if extra_topics or languages:
+                    languages_topics = {'languages': languages, 'topics': extra_topics}
                 logger.info('Generating recommendations based on user details')
-                urls = await recommend(user_details=user_details, languages_topics=language_topics)
+                urls = await recommend(user_details=user_details, languages_topics=languages_topics)
             except Exception as e:
                 logger.error(f"Error generating recommendations: {str(e)}")
-                urls = await get_topic_based_recommendations(user)
+                urls = []
 
         if not urls:
             logger.info("No recommendations found")
             return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
         
-        unique_recommendations = process_recommendations(urls, language_topics)
+        unique_recommendations = process_recommendations(urls, languages_topics)
 
         if not unique_recommendations:
             logger.info(f"No recommendations found for user: {username}")
