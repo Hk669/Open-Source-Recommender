@@ -4,11 +4,11 @@ import random
 import os
 import logging
 import asyncio
-from settings import DEBUG
+from .settings import DEBUG
 from typing import List, Optional
 from datetime import datetime, timezone
-from models import RepositoryRecommendation
-from oai import generate_embeddings
+from src.models import RepositoryRecommendation
+from src.oai import generate_embeddings
 from dotenv import load_dotenv
 load_dotenv()
 
