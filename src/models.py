@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime, timedelta
 import os
@@ -152,6 +152,27 @@ async def get_user_recommendation_by_id(recommendation_id):
     except Exception as e:
         logger.error(f"Failed to get recommendation from DB: {str(e)}")
         raise ValueError("Failed to get recommendation from DB")
+
+def process_recommendations(urls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """
+    Process the list of URLs to ensure uniqueness and format them correctly.
+    
+    Args:
+        urls: List of URL recommendations.
+        
+    Returns:
+        Processed list of unique recommendations.
+    """
+    seen_full_names = set()
+    unique_recommendations = []
+    
+    for rec in urls:
+        full_name = rec.get("full_name")
+        if full_name and full_name not in seen_full_names:
+            seen_full_names.add(full_name)
+            unique_recommendations.append(rec)
+    
+    return unique_recommendations
 
 
 # TODO: v2

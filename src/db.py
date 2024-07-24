@@ -25,10 +25,90 @@ async def recommend(user_details=None,
     recommended_repos = set()
     collection = get_chromadb_collection()
 
-    if user_details:
+    # Get recommendations based on only language_topics if present, otherwise there is no point in collecting the preferred languages and topics
+    if languages_topics:
         lang_topics = languages_topics["languages"] + languages_topics["topics"]
+        new_doc = f"I write code in {lang_topics}, suggest me the best open-source projects"
+        embeddings = generate_embeddings(new_doc)
+
+        try:
+            results = collection.query(
+                query_embeddings=[embeddings],
+                n_results=max_recommendations,
+                include=["metadatas", "distances"]
+            )
+        except DatabaseError as e:
+            logger.error(f"Error querying ChromaDB: {e}")
+            return recommendations
+
+        if results['metadatas'][0]:
+            metadatas = results["metadatas"][0]
+            for metadata in metadatas:
+                repo_name = metadata.get("full_name")
+                if '/' in repo_name:
+                    repo_url = f"https://github.com/{repo_name}"
+                    if repo_url not in recommended_repos:
+                        recommendations.append({
+                            "repo_url": repo_url,
+                            "full_name": metadata.get("full_name"),
+                            "description": metadata.get("description"),
+                            "stargazers_count": metadata.get("stargazers_count"),
+                            "forks_count": metadata.get("forks_count"),
+                            "open_issues_count": metadata.get("open_issues_count"),
+                            "avatar_url": metadata.get("avatar_url"),
+                            "language": metadata.get("language"),
+                            "updated_at": metadata.get("updated_at"),
+                            "topics": metadata.get("topics")
+                        })
+                        recommended_repos.add(repo_url)
+                else:
+                    logger.info("No recommendations found for topics")
+
+        # if the number of recommendations is less than max_recommendations,
+        # we will also recommend projects based on user's projects
+        if len(recommendations) < max_recommendations+5:
+            for user_proj in user_details:
+                new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
+                embeddings = generate_embeddings(new_doc)
+
+                try:
+                    results = collection.query(
+                        query_embeddings=[embeddings],
+                        n_results=3,
+                        include=["metadatas", "distances"]
+                    )
+                except DatabaseError as e:
+                    logger.error(f"Error querying ChromaDB: {e}")
+                    return recommendations
+
+                if results['metadatas'][0]:
+                    metadatas = results["metadatas"][0]
+
+                    for metadata in metadatas:
+                        repo_name = metadata.get("full_name")
+                        if '/' in repo_name:
+                            repo_url = f"https://github.com/{repo_name}"
+                            if repo_url not in recommended_repos:
+                                recommendations.append({
+                                    "repo_url": repo_url,
+                                    "full_name": metadata.get("full_name"),
+                                    "description": metadata.get("description"),
+                                    "stargazers_count": metadata.get("stargazers_count"),
+                                    "forks_count": metadata.get("forks_count"),
+                                    "open_issues_count": metadata.get("open_issues_count"),
+                                    "avatar_url": metadata.get("avatar_url"),
+                                    "language": metadata.get("language"),
+                                    "updated_at": metadata.get("updated_at"),
+                                    "topics": metadata.get("topics")
+                                })
+                                recommended_repos.add(repo_url)
+                        else:
+                            logger.info("No recommendations found for repos")
+    
+    # if the languages and topics are not present, we will recommend projects based on user's projects
+    if user_details and not languages_topics:
         for user_proj in user_details:
-            new_doc = f"{user_proj['project_name']} : {user_proj['description']} : {lang_topics}"
+            new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
             embeddings = generate_embeddings(new_doc)
 
             results = collection.query(
@@ -37,14 +117,11 @@ async def recommend(user_details=None,
                 include=["metadatas", "distances"]
             )
 
-            print(f"UserProject: {user_proj} : language topics : {languages_topics}, Repositories: {results}")
             if results['metadatas'][0]:
                 metadatas = results["metadatas"][0]
 
                 for metadata in metadatas[:4]: # considering only the top 4 recommendations
                     repo_name = metadata.get("full_name")
-                    print('----------------\n Repo Name:', repo_name)
-                    print('\n------------------')
                     if '/' in repo_name:
                         repo_url = f"https://github.com/{repo_name}"
                         if repo_url not in recommended_repos:
@@ -68,7 +145,8 @@ async def recommend(user_details=None,
 
     if topics and not user_details:
         logger.info(f"Querying ChromaDB for topics: {topics}")
-        embeddings = [generate_embeddings(topic) for topic in topics]
+        topics_doc = f"I write code in {topics}, suggest me the best open-source projects"
+        embeddings = generate_embeddings(topics_doc)
 
         results = collection.query(
             query_embeddings=embeddings,
@@ -237,7 +315,7 @@ async def main():
 ]
 
     languages_topics = {
-        'languages': ['Python', 'typescript'],
+        'languages': ['javascript', 'typescript', 'c#'],
         'topics': ['agentic-ai', 'openai', "GPT", "llm"]
     }
     topics = ["docker", "kubernetes", "devops"]

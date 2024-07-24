@@ -20,7 +20,8 @@ from src.models import (User,
                         GithubUser, 
                         get_user_collection, 
                         append_recommendations_to_db, get_user_previous_recommendations, 
-                        get_user_recommendation_by_id, check_and_update_daily_limit)
+                        get_user_recommendation_by_id, check_and_update_daily_limit,
+                        process_recommendations)
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
@@ -188,75 +189,39 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
 
-        limit_updated = await check_and_update_daily_limit(username)
+        # limit_updated = await check_and_update_daily_limit(username)
         
-        if not limit_updated:
-            logger.warning(f"Daily limit exceeded for user: {username}")
-            return {
-                "success": False,
-                "message": "Reached your daily limit",
-                "recommendations": []
-            }
+        # if not limit_updated:
+        #     logger.warning(f"Daily limit exceeded for user: {username}")
+        #     return {
+        #         "success": False,
+        #         "message": "Reached your daily limit",
+        #         "recommendations": []
+        #     }
 
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
 
         user_details, language_topics = await get_repos(user)
         if not user_details:
-            logger.info("No repos found for user")
-            logger.info("Generating topic-based recommendations")
+            logger.info("No repos found for user, generating topic-based recommendations")
             urls = await get_topic_based_recommendations(user)
+        else:
+            try:
+                logger.info('Generating recommendations based on user details')
+                urls = await recommend(user_details=user_details, languages_topics=language_topics)
+            except Exception as e:
+                logger.error(f"Error generating recommendations: {str(e)}")
+                urls = await get_topic_based_recommendations(user)
 
-            if not urls:
-                logger.info("No recommendations found with topics based recommendations")
-                return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
-            
-            for rec in urls:
-                full_name = rec.get("full_name")
-                if full_name not in seen_full_names:
-                    seen_full_names.add(full_name)
-                    unique_recommendations.append(rec)
-
-            if not unique_recommendations:
-                return {'recommendations': [], 'message': 'No recommendations found'}
-            
-            rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-            rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
-            logger.info(f"Recommendations saved to DB with ID: {rec_id}")
-
-
-            # update_daily_limit(username) # updates the daily limit of the user.
-            return {
-                'recommendations': unique_recommendations[::-1][:20],
-                'recommendation_id': rec_id
-            }
-        
-        try:
-            print('Recommending\n\n')
-            urls = await recommend(user_details=user_details, languages_topics=language_topics)
-        except Exception as e:
-            logger.error(f"Error generating recommendations: {str(e)}")
-            print("Error: Generating topic-based recommendations")
-            urls = await get_topic_based_recommendations(user)
-
-        # if urls and len(urls) < 5:
-        #     logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-        #     fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-        #     urls = await recommend(user_details=user_details, languages_topics=language_topics)
         if not urls:
             logger.info("No recommendations found")
             return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
         
-        seen_full_names = set()
-        unique_recommendations = []
-
-        for rec in urls:
-            full_name = rec.get("full_name")
-            if full_name not in seen_full_names:
-                seen_full_names.add(full_name)
-                unique_recommendations.append(rec)
+        unique_recommendations = process_recommendations(urls)
 
         if not unique_recommendations:
+            logger.info(f"No recommendations found for user: {username}")
             return {'recommendations': [], 'message': 'No recommendations found'}
         
         rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
