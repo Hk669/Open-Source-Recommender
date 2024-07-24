@@ -28,13 +28,13 @@ async def recommend(user_details=None,
     # Get recommendations based on only language_topics if present, otherwise there is no point in collecting the preferred languages and topics
     if languages_topics:
         lang_topics = languages_topics["languages"] + languages_topics["topics"]
-        new_doc = f"I write code in {lang_topics}, suggest me the best open-source projects"
+        new_doc = f"I write code in programming languages: {languages_topics['languages']}, and I am interested in topics: {languages_topics['topics']}, suggest me the best open-source projects"
         embeddings = generate_embeddings(new_doc)
 
         try:
             results = collection.query(
                 query_embeddings=[embeddings],
-                n_results=max_recommendations,
+                n_results=max_recommendations+5,
                 include=["metadatas", "distances"]
             )
         except DatabaseError as e:

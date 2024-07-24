@@ -153,7 +153,8 @@ async def get_user_recommendation_by_id(recommendation_id):
         logger.error(f"Failed to get recommendation from DB: {str(e)}")
         raise ValueError("Failed to get recommendation from DB")
 
-def process_recommendations(urls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def process_recommendations(urls: List[Dict[str, Any]],
+                            languages_topics) -> List[Dict[str, Any]]:
     """
     Process the list of URLs to ensure uniqueness and format them correctly.
     
@@ -165,13 +166,35 @@ def process_recommendations(urls: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     seen_full_names = set()
     unique_recommendations = []
-    
+
     for rec in urls:
         full_name = rec.get("full_name")
         if full_name and full_name not in seen_full_names:
             seen_full_names.add(full_name)
             unique_recommendations.append(rec)
-    
+
+    def match_score(rec):
+        # Calculate the score based on language and topic match
+        score = 0
+        rec_language = rec.get('language', '')
+        rec_topics = rec.get('topics', [])
+        
+        # Extract user languages and topics
+        user_languages = languages_topics.get("languages", [])
+        user_topics = languages_topics.get("topics", [])
+
+        # Add 2 to the score for a language match
+        if rec_language in user_languages:
+            score += 2
+        
+        # Add 1 to the score for each matching topic
+        score += sum(1 for topic in rec_topics if topic in user_topics)
+        
+        return score
+
+    # Sort the recommendations based on match score in descending order
+    unique_recommendations.sort(key=match_score, reverse=True)
+
     return unique_recommendations
 
 
@@ -231,4 +254,70 @@ async def main():
     print(recommendations)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # asyncio.run(main())
+    # Example list of URL recommendations
+    urls = [
+        {
+            "full_name": "pandas-dev/pandas",
+            "language": "Python",
+            "topics": ["data-analysis", "data-science"]
+        },
+        {
+            "full_name": "tensorflow/tensorflow",
+            "language": "C++",
+            "topics": ["machine-learning", "deep-learning"]
+        },
+        {
+            "full_name": "vuejs/vue",
+            "language": "JavaScript",
+            "topics": ["vue", "front-end", "javascript", "framework"]
+        },
+        {
+            "full_name": "d3/d3",
+            "language": "JavaScript",
+            "topics": ["visualization", "d3", "data-visualization"]
+        },
+        {
+            "full_name": "django/django",
+            "language": "Python",
+            "topics": ["web", "framework", "django"]
+        },
+        {
+            "full_name": "numpy/numpy",
+            "language": "Python",
+            "topics": ["math", "array", "numpy"]
+        },
+        {
+            "full_name": "scikit-learn/scikit-learn",
+            "language": "Python",
+            "topics": ["machine-learning", "data-science", "scikit-learn"]
+        },
+        {
+            "full_name": "nodejs/node",
+            "language": "JavaScript",
+            "topics": ["nodejs", "javascript", "server"]
+        },
+        {
+            "full_name": "rails/rails",
+            "language": "Ruby",
+            "topics": ["rails", "web", "ruby"]
+        },
+        {
+            "full_name": "spring-projects/spring-framework",
+            "language": "Java",
+            "topics": ["spring", "framework", "java"]
+        }
+    ]
+
+    # User's preferred languages and topics
+    languages_topics = {
+        "languages": ["Python", "JavaScript"],
+        "topics": ["machine-learning", "data-science", "web", "visualization"]
+    }
+
+    # Process and sort the recommendations
+    sorted_recommendations = process_recommendations(urls, languages_topics)
+
+    # Display the sorted recommendations
+    for rec in sorted_recommendations:
+        print(f"Repo: {rec['full_name']}, Language: {rec['language']}, Topics: {rec['topics']}")
