@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./Input.css";
 import { toast } from "react-toastify";
@@ -10,6 +10,13 @@ const Input = ({ onSubmit }) => {
   const [languageInput, setLanguageInput] = useState("");
   const [extraTopicInput, setExtraTopicInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username");
+    if (storedUsername) {
+      setUsername(storedUsername);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -131,6 +138,7 @@ const Input = ({ onSubmit }) => {
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          disabled
         />
       </label>
       <label>

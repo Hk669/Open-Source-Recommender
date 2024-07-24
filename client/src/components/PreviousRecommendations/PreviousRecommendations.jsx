@@ -7,6 +7,7 @@ import React, {
 } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { useParams, useNavigate } from "react-router-dom";
+import "./PreviousRecommendations.css";
 
 const PreviousRecommendations = React.memo(
   ({ userData, onSelectPreviousRecommendation }) => {
@@ -50,13 +51,15 @@ const PreviousRecommendations = React.memo(
                 "No recommendations found. Please generate recommendations first."
               );
             } else {
-              setRecommendationIds(data.map((rec) => rec.recommendation_id));
+              setRecommendationIds(
+                data.map((rec) => rec.recommendation_id).reverse()
+              );
             }
           } else {
             setError("Invalid data format: Expected an array");
           }
         } else {
-          setError("Failed to fetch recommendation IDs.");
+          setError("Please Generate Recommendations");
         }
       } catch (error) {
         setError("An error occurred while fetching recommendations.");
@@ -105,7 +108,7 @@ const PreviousRecommendations = React.memo(
               recommendationId
             );
           } else {
-            setError("Failed to fetch recommendation details.");
+            setError("Please Generate Recommendations");
           }
         } catch (error) {
           setError("An error occurred while fetching recommendation details.");
@@ -128,21 +131,20 @@ const PreviousRecommendations = React.memo(
     );
 
     return (
-      <div className="reco-container">
+      <div className="pre-reco-container">
         <button
           className="go-back-button"
           onClick={() => navigate("/recommender")}
         >
           <span className="back-arrow">{"< "}</span>Go back
         </button>
-        <br></br>
 
         <h2>Previous Recommendations</h2>
 
         {/* <br></br> */}
         {loading && <p>Loading...</p>}
         {error ? (
-          <p className="error-message">Error: {error}</p>
+          <p className="error-message">{error}</p>
         ) : (
           recommendationIds.length > 0 && (
             <ul className="recommendation-ids">

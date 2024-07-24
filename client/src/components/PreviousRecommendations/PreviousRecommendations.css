@@ -1,0 +1,61 @@
+.pre-reco-container {
+    height: 420px;
+  max-height: 420px; /* Adjust as needed */
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box; /* Include padding and border in width */
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.recommendation-ids {
+  list-style-type: none;
+  padding: 0;
+}
+
+.recommendation-ids li {
+  margin-bottom: 8px;
+}
+
+.recommendation-ids button {
+  background-color: #000000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.recommendation-ids button:hover {
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+    -webkit-text-fill-color: white;
+
+    font-weight: 500;
+    cursor: pointer;
+  text-decoration: underline;
+}
+
+.error-message {
+  color: rgb(140, 81, 81);
+}
+
+.go-back-button {
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  padding: 9px 15px;
+  border: #f0f0f0;
+  margin-bottom: 10px;
+}
+
+.go-back-button:hover {
+  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* -webkit-text-fill-color: transparent; */
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}

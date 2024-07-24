@@ -40,6 +40,7 @@ function App() {
             const data = await response.json();
             setIsAuthenticated(true);
             setUserData(data);
+            localStorage.setItem("username", data.username);
             if (location.pathname === "/") navigate("/recommender");
           } else {
             localStorage.removeItem("jwt_token");
@@ -57,6 +58,7 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("jwt_token");
+    localStorage.removeItem("username");
     setIsAuthenticated(false);
     setUserData(null);
     navigate("/");

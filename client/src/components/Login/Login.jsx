@@ -34,8 +34,7 @@ const Login = () => {
           <ul>
             <li>
               <strong>Personalized Recommendations:</strong> Get matched with
-              the best open-source repositories based on your GitHub profile and
-              current projects.
+              the best open-source repositories based on your GitHub profile
             </li>
             <li>
               <strong>Optional Preferences:</strong> Customize your
@@ -58,7 +57,7 @@ const Login = () => {
           <h2>Why Choose Open Source Recommender?</h2>
           <ul>
             <li>
-              <strong>Relevancy:</strong> Ive seen goodfirstissues, but the
+              <strong>Relevancy:</strong> I've seen goodfirstissues, but the
               problem is that they are not always relevant to my skills and
               interests.
             </li>
