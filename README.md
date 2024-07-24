@@ -5,7 +5,7 @@
 https://github.com/user-attachments/assets/c4e093ea-2256-4f25-8eeb-2de0e6fc67d8
 
 
-This will be a free public-facing web application designed to find open-source projects for beginners and developers.
+This will be a free public-facing web application designed to find open-source projects for beginners and developers available at [gitmatch.in](https://gitmatch.in).
 
 Search your next contribution to open source easily! A free web app is here to help every developer find cool open-source projects of interest that fit their skillset. Just enter your GitHub username; our intelligent recommender system will do the rest. 
 
@@ -43,7 +43,7 @@ feel free to drop your suggestions and issues at [Discussions](https://github.co
 
 ## Get Started
 
-**still under construction*
+checkout [gitmatch.in](https://gitmatch.in), and if you want to leverage the true power of the gitmatch, follow [steps](https://github.com/Hk669/Open-Source-Recommender/discussions/1)
 
 ## Feedback
 
