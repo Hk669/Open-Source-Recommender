@@ -10,6 +10,10 @@
   padding-right: 40px;
 }
 
+.pre-reco-container h2 {
+  color: #000000;
+}
+
 .recommendation-ids {
   list-style-type: none;
   padding: 0;
@@ -20,19 +24,21 @@
 }
 
 .recommendation-ids button {
-  background-color: #000000;
+  background-color: #4d4949;
   color: white;
   border: none;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
   transition: background-color 0.2s;
+  width: 300px;
 }
 
 .recommendation-ids button:hover {
   background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
-    -webkit-text-fill-color: white;
-
+/* background-clip: text; */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
     font-weight: 500;
     cursor: pointer;
   text-decoration: underline;
