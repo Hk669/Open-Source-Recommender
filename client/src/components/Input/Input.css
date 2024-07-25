@@ -92,6 +92,12 @@ ul li a:hover {
     }
 }
 
+
+form p {
+    font-size: x-small;
+    color:#9b9696
+}
+
 .tag-container {
   display: flex;
   flex-wrap: wrap;
@@ -99,14 +105,9 @@ ul li a:hover {
   width: 90%;
 }
 
-form p {
-    font-size: x-small;
-    color:#9b9696
-}
-
 .tag {
   background-color: #bdc7ea;
-  border-radius: 10px;  
+  border-radius: 10px;
   padding: 5px 10px;
   margin-top: 10px;
   margin-right: 5px;
@@ -115,17 +116,25 @@ form p {
   align-items: center;
   height: 30px;
   font-size: smaller;
-  cursor: default; /* Ensure the cursor is not a pointer */
+  cursor: default;
 }
 
 .tag button {
   background: none;
   border: none;
+  color: #555;
   cursor: pointer;
   font-size: 16px;
   padding: 0;
-  margin-left: 5px; /* Space between text and button */
-  line-height: 1; /* Prevent button from changing height */
-  /* Optional: set a width if needed */
-  width: 20px; /* Or adjust as necessary */
+  margin-left: 8px;
+  line-height: 1;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tag button:hover {
+  color: #fa0366;
 }
