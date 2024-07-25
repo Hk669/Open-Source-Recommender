@@ -65,3 +65,46 @@
   cursor: pointer;
   text-decoration: underline;
 }
+
+/* Mobile view adjustments */
+@media (max-width: 600px) {
+  .pre-reco-container {
+    max-height: 420px; /* Maintain max height to allow scrolling */
+    overflow-y: auto; /* Enable scrolling for overflow content */
+    padding: 10px 20px; /* Adjust padding */
+    box-shadow: none; /* Simplify shadow for a cleaner look */
+    border-radius: 0; /* Remove border-radius for edge-to-edge fit */
+  }
+
+  .pre-reco-container h2 {
+    font-size: 1.2rem; /* Adjust heading font size */
+  }
+
+  .recommendation-ids {
+    max-height: 300px; /* Set a max height to allow scrolling */
+    overflow-y: auto; /* Enable vertical scrolling */
+    padding: 0; /* Maintain padding */
+  }
+
+  .recommendation-ids li {
+    margin-bottom: 8px; /* Maintain spacing */
+  }
+
+  .recommendation-ids button {
+    width: 100%; /* Full width on mobile */
+    font-size: 1rem; /* Decrease font size */
+    padding: 8px 10px; /* Adjust padding */
+  }
+
+  .error-message {
+    font-size: 1rem; /* Adjust font size */
+  }
+
+  .go-back-button {
+    padding: 8px 12px; /* Adjust padding */
+    font-size: 1rem; /* Reduce font size */
+    margin-bottom: 8px; /* Adjust margin */
+    border: none; /* Remove border */
+    width: 100%; /* Full width on mobile */
+  }
+}

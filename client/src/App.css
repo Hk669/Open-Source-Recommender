@@ -244,3 +244,87 @@ body {
   color: #dc3545;
   font-weight: bold;
 }
+
+/* Mobile view adjustments */
+@media (max-width: 600px) {
+  body {
+    padding: 10px; /* Add some padding to avoid content touching the screen edges */
+  }
+
+  .content-container {
+    width: 100%; /* Full width on mobile */
+    padding: 0 15px; /* Add some horizontal padding */
+  }
+
+  .App {
+    padding: 20px;
+  }
+
+  .App-main {
+    flex-direction: column; /* Stack elements vertically */
+    padding-top: 20px;
+  }
+
+  .App-header {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .App-header h1 {
+    font-size: 1.2rem; /* Smaller font size for headers */
+  }
+
+  .top-row {
+    flex-direction: column; /* Stack form and previous recommendations */
+    gap: 10px; /* Add space between stacked elements */
+  }
+
+  .input-container,
+  .previous-recommendations-container {
+    width: 100%; /* Full width for inputs */
+  }
+
+  .recommendations-container {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .reco-container {
+    padding: 15px;
+  }
+
+  .repo-card {
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+
+  .repo-info h3 {
+    font-size: 16px;
+  }
+
+  .repo-info p {
+    font-size: 14px;
+  }
+
+  .repo-details {
+    font-size: 12px;
+  }
+
+  .repo-link a {
+    font-size: 14px;
+  }
+
+  .topics-container .topic {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .recommendation-ids button {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  .error-message {
+    font-size: 14px;
+  }
+}

@@ -114,3 +114,51 @@ h3 {
 .login-container {
   margin-left: 3rem;
 }
+
+/* Mobile view adjustments */
+@media (max-width: 600px) {
+  .github-login-button {
+    padding: 0.6rem 1rem; /* Reduce padding for smaller screens */
+    font-size: 1rem; /* Decrease font size */
+  }
+
+  .github-icon {
+    font-size: 1.2rem; /* Decrease icon size */
+    margin-right: 0.3rem;
+  }
+
+  h3 {
+    font-size: 1.2rem; /* Reduce font size */
+    margin-top: 0.8rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .how-container {
+    flex-direction: column; /* Stack elements vertically */
+    gap: 2rem; /* Reduce gap between elements */
+    padding: 20px 20px; /* Decrease padding */
+  }
+
+  .image-container {
+    max-width: 100%; /* Full width on mobile */
+    margin-top: 20px; /* Adjust margin */
+    max-height: none; /* Remove max height constraint */
+  }
+
+  .features-container {
+    flex-direction: column; /* Stack elements vertically */
+    gap: 2rem; /* Reduce gap between elements */
+    padding: 20px 20px; /* Decrease padding */
+  }
+
+  .login-container {
+    margin-left: 0; /* Remove left margin for full width */
+    padding: 0 10px; /* Add horizontal padding */
+  }
+
+  .login-container p {
+    font-size: 1rem; /* Reduce font size */
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+}

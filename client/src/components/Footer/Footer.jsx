@@ -23,7 +23,18 @@ const Footer = () => {
             href="https://github.com/Hk669/Open-Source-Recommender/discussions/13"
             target="_blank"
             rel="noopener noreferrer"
-          >Feedback</a>
+          >
+            Feedback
+          </a>
+        </p>
+        <p className="feedback">
+          <a
+            href="https://github.com/Hk669/Open-Source-Recommender/discussions/1"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Tutorial
+          </a>
         </p>
         <div className="social-links">
           <a

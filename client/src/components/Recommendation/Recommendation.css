@@ -41,24 +41,6 @@
   margin-bottom: 15px; /* Optional: Adds space between cards */
 }
 
-.go-back-button {
-  background-color: #ffffff;
-  color: rgb(0, 0, 0);
-  padding: 9px 15px;
-  border: #f0f0f0;
-  margin-bottom: 10px;
-}
-
-.go-back-button:hover {
-  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  /* -webkit-text-fill-color: transparent; */
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: underline;
-}
-
 .repo-info {
   flex: 1;
 }
