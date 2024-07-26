@@ -24,8 +24,14 @@
 }
 
 .recommendation-ids button {
-  background-color: #4d4949;
-  color: white;
+  /* background: linear-gradient(to right, #fa0366 -40%, #000000 140%); */
+  background: #000000;
+/* background-clip: text; */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+    font-weight: 500;
+    cursor: pointer;
+  text-decoration: underline;
   border: none;
   border-radius: 8px;
   padding: 8px 12px;
@@ -35,12 +41,13 @@
 }
 
 .recommendation-ids button:hover {
-  background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
-/* background-clip: text; */
+  /* background: linear-gradient(to right, #fa0366 -40%, #000000 140%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
     font-weight: 500;
-    cursor: pointer;
+    cursor: pointer; */
+  background-color: #f8f9fa;
+  color: #000000;
   text-decoration: underline;
 }
 
