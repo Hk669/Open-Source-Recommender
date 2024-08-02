@@ -292,7 +292,7 @@ async def get_recommendations_without_github(request: Request):
             logger.info(f"No recommendations found for user: {username}")
             return {'recommendations': [], 'message': 'No recommendations found'}
         
-        append_user_to_db(username)
+        await append_user_to_db(username)
         rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
         logger.info(f"Recommendations saved to DB with ID: {rec_id}")
