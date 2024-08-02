@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 async def recommend(user_details=None, 
-              languages_topics=None, 
-              topics=None, 
+              languages_topics=None,
+              topics=None,
               max_recommendations=15) -> List[RepositoryRecommendation]:
     """Generate recommendations for users based on projects or topics."""
     

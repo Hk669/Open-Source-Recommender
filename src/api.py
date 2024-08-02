@@ -268,9 +268,48 @@ async def get_recommendation_by_id(recommendation_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get('/api/recommendations_without_github')
+async def get_recommendations_without_github(request: Request):
+    try:
+        body = await request.json()
+        username = body.get("username")
+        extra_topics = body.get("extra_topics", [])
+        languages = body.get("languages", [])
+
+        assert username, "Username is required"
+        assert extra_topics or languages, "Extra topics or languages are required"
+
+        username = username + generate_secure_random_string()
+        languages_topics = {"languages": languages, "extra_topics": extra_topics}
+        urls = await recommend(languages_topics=languages_topics)
+
+        if not urls:
+            logger.info("No recommendations found")
+            return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
+        
+        unique_recommendations = process_recommendations(urls, languages_topics) #for ranking the recommendations based on the languages_topics
+
+        if not unique_recommendations:
+            logger.info(f"No recommendations found for user: {username}")
+            return {'recommendations': [], 'message': 'No recommendations found'}
+        
+        rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
+        logger.info(f"Recommendations saved to DB with ID: {rec_id}")
+    except Exception as e:
+        print(e)
+
 @app.get('/api/health')
 async def health_check(request: Request):
     return JSONResponse({"status": "OK"})
+
+def generate_secure_random_string(length=7):
+    """Generate a secure random string."""
+    import string
+    import secrets
+
+    char_set = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(char_set) for _ in range(length))
 
 
 if __name__ == '__main__':
