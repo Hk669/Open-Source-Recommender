@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 async def recommend(user_details=None, 
               languages_topics=None,
-              topics=None,
+              _topics=None,
               max_recommendations=15) -> List[RepositoryRecommendation]:
     """Generate recommendations for users based on projects or topics."""
     
@@ -104,21 +104,20 @@ async def recommend(user_details=None,
             else:
                 logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
-    if topics and not user_details:
-        logger.info(f"Querying ChromaDB for topics: {topics}")
-        topics_doc = f"{topics}"
+    if _topics and not user_details:
+        logger.info(f"Querying ChromaDB for topics: {_topics}")
+        topics_doc = f"{_topics}"
         embeddings = generate_embeddings(topics_doc)
 
         results = collection.query(
             query_embeddings=embeddings,
             n_results=8,  # Get more results to allow for filtering
-            include=["ids", "metadatas"]
+            include=["metadatas", "documents"]
         )
 
         logger.info(f"Recommendation results: {results}")
-        if results['documents'][0]:
+        if results['metadatas'][0]:
                 metadatas = results["metadatas"][0]
-
                 for metadata in metadatas:
                     repo_name = metadata.get("full_name")
                     if '/' in repo_name:
@@ -134,11 +133,9 @@ async def recommend(user_details=None,
                                 "avatar_url": metadata.get("avatar_url"),
                                 "language": metadata.get("language"),
                                 "updated_at": metadata.get("updated_at"),
-                                "topics": metadata.get("topics", [])
+                                "topics": metadata.get("topics")
                             })
                             recommended_repos.add(repo_url)
-                    if len(recommendations) >= max_recommendations:
-                        break
         else:
             logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
