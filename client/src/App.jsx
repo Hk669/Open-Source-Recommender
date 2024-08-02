@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import GithubCallback from "./components/GithubCallback";
 import PreviousRecommendations from "./components/PreviousRecommendations/PreviousRecommendations";
+import AppWithoutAuth from "./AppWithouthAuth";
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
@@ -102,6 +103,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/auth-callback" element={<GithubCallback />} />
+          <Route path="/try-recommender" element={<AppWithoutAuth />} />
           <Route
             path="/recommender"
             element={

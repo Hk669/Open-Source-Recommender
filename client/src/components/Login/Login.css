@@ -162,3 +162,9 @@ h3 {
     margin-bottom: 1rem;
   }
 }
+
+.login-buttons {
+  display: flex;
+  justify-content: left; /* Center buttons horizontally */
+  gap: 10px; /* Add spacing between buttons */
+}

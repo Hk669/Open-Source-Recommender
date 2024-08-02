@@ -3,12 +3,18 @@ import React from "react";
 import "./Login.css";
 import { FaGithub } from "react-icons/fa";
 import appImage from "../../assets/application.png";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const Login = () => {
+  const navigate = useNavigate();
   const handleLogin = () => {
     window.location.href = `${API_URL}/github-login`;
+  };
+
+  const handleTryWithoutAuth = () => {
+    navigate("/try-recommender");
   };
 
   return (
@@ -22,10 +28,16 @@ const Login = () => {
       </p>
       <br></br>
 
-      <button className="github-login-button" onClick={handleLogin}>
-        <FaGithub className="github-icon" />
-        <span>Connect Your GitHub</span>
-      </button>
+      <div className="login-buttons">
+        <button className="github-login-button" onClick={handleLogin}>
+          <FaGithub className="github-icon" />
+          <span>Connect Your GitHub</span>
+        </button>
+
+        <button className="github-login-button" onClick={handleTryWithoutAuth}>
+          Try Without Github &rarr;
+        </button>
+      </div>
 
       <br></br>
       <div className="features-container">
@@ -109,7 +121,7 @@ const Login = () => {
           </ul>
         </div>
         <div className="image-container">
-          <img src={appImage} alt="Application"/>
+          <img src={appImage} alt="Application" />
         </div>
       </div>
     </div>
