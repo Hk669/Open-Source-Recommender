@@ -46,7 +46,7 @@ class GithubUser(BaseModel):
     following: Optional[int] = None
     public_repos: Optional[int] = None
     public_gists: Optional[int] = None
-    access_token: Optional[int] = None
+    access_token: Optional[str] = None
     created_at: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     updated_at: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
