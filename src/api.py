@@ -13,7 +13,6 @@ import jwt
 from datetime import timedelta, datetime
 import uvicorn
 from fastapi.responses import JSONResponse
-from pymongo import MongoClient
 from .user_data import get_repos
 from src.db import (recommend, 
                     get_topic_based_recommendations)
@@ -21,14 +20,12 @@ from src.models import (User,
                         GithubUser, 
                         get_user_collection, 
                         append_recommendations_to_db, get_user_previous_recommendations, 
-                        get_user_recommendation_by_id, check_and_update_daily_limit)
+                        get_user_recommendation_by_id, check_and_update_daily_limit,
+                        process_recommendations, append_user_to_db)
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
-
-client = MongoClient(os.environ['MONGODB_URL'])
-db = client['github']
 
 # console_handler = logging.StreamHandler(sys.stdout)
 # console_handler.setLevel(logging.DEBUG)
@@ -52,14 +49,13 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
 
 GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
-ALLOWED_ORIGINS = ["*"]
 
 
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["https://gitmatch.in"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -192,52 +188,41 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
 
-        # TODO: v2
-        limit_updated = await check_and_update_daily_limit(username)
+        # limit_updated = await check_and_update_daily_limit(username)
         
-        if not limit_updated:
-            logger.warning(f"Daily limit exceeded for user: {username}")
-            return {
-                "success": False,
-                "message": "Reached your daily limit",
-                "recommendations": []
-            }
+        # if not limit_updated:
+        #     logger.warning(f"Daily limit exceeded for user: {username}")
+        #     return {
+        #         "success": False,
+        #         "message": "Reached your daily limit",
+        #         "recommendations": []
+        #     }
 
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
 
-        user_details, language_topics = await get_repos(user)
+        user_details, languages_topics = await get_repos(user)
         if not user_details:
-            logger.info("No repos found for user")
-            logger.info("Generating topic-based recommendations")
-            return await get_topic_based_recommendations(user)
-        
-        try:
-            print('Recommending\n\n')
-            urls = await recommend(user_details=user_details, languages_topics=language_topics)
-        except Exception as e:
-            logger.error(f"Error generating recommendations: {str(e)}")
-            print("Error: Generating topic-based recommendations")
-            return await get_topic_based_recommendations(user)
+            logger.info("No repos found for user, generating topic-based recommendations")
+            urls = await get_topic_based_recommendations(user)
+        else:
+            try:
+                if extra_topics or languages:
+                    languages_topics = {'languages': languages, 'topics': extra_topics}
+                logger.info('Generating recommendations based on user details')
+                urls = await recommend(user_details=user_details, languages_topics=languages_topics)
+            except Exception as e:
+                logger.error(f"Error generating recommendations: {str(e)}")
+                urls = []
 
-        # if urls and len(urls) < 5:
-        #     logger.info("Fewer than 10 recommendations found, fetching more repositories based on topics")
-        #     fetched_repos = await main(language_topics, access_token=user.access_token, extra_topics=extra_topics, extra_languages=languages)
-        #     urls = await recommend(user_details=user_details, languages_topics=language_topics)
         if not urls:
             logger.info("No recommendations found")
             return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
         
-        seen_full_names = set()
-        unique_recommendations = []
-
-        for rec in urls:
-            full_name = rec.get("full_name")
-            if full_name not in seen_full_names:
-                seen_full_names.add(full_name)
-                unique_recommendations.append(rec)
+        unique_recommendations = process_recommendations(urls, languages_topics)
 
         if not unique_recommendations:
+            logger.info(f"No recommendations found for user: {username}")
             return {'recommendations': [], 'message': 'No recommendations found'}
         
         rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
@@ -247,19 +232,20 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
 
         # update_daily_limit(username) # updates the daily limit of the user.
         return {
-            'recommendations': unique_recommendations[::-1][:20],
+            'recommendations': unique_recommendations[:20],
             'recommendation_id': rec_id
         }
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
+
 @app.get('/api/user-recommendations')
 async def get_user_recommendations(username: str = Query(...), current_user: dict = Depends(get_current_user)):
     try:
         if username != current_user["username"]:
             raise HTTPException(status_code=403, detail="Unauthorized access")
-        
+
         user_recommendations = await get_user_previous_recommendations(username)
         if not user_recommendations:
             raise HTTPException(status_code=404, detail="No recommendations found for user")
@@ -267,7 +253,7 @@ async def get_user_recommendations(username: str = Query(...), current_user: dic
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while fetching user recommendations")
-    
+
 
 @app.get("/api/recommendation/{recommendation_id}")
 async def get_recommendation_by_id(recommendation_id: str):
@@ -281,9 +267,56 @@ async def get_recommendation_by_id(recommendation_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post('/api/recommendations_without_github')
+async def get_recommendations_without_github(request: Request):
+    try:
+        body = await request.json()
+        username = body.get("username")
+        extra_topics = body.get("extra_topics", [])
+        languages = body.get("languages", [])
+
+        assert username, "Username is required"
+        assert extra_topics or languages, "Extra topics or languages are required"
+
+        username = username + generate_secure_random_string()
+        languages_topics = {"languages": languages, "topics": extra_topics} # this should be topics and not extra_topics
+        urls = await recommend(languages_topics=languages_topics)
+
+        if not urls:
+            logger.info("No recommendations found")
+            return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
+        
+        unique_recommendations = process_recommendations(urls, languages_topics) #for ranking the recommendations based on the languages_topics
+
+        if not unique_recommendations:
+            logger.info(f"No recommendations found for user: {username}")
+            return {'recommendations': [], 'message': 'No recommendations found'}
+        
+        await append_user_to_db(username)
+        rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
+        logger.info(f"Recommendations saved to DB with ID: {rec_id}")
+
+        return {
+            'recommendations': unique_recommendations[:20],
+            'recommendation_id': rec_id
+        }
+    
+    except Exception as e:
+        logger.info(f"There is an error: {e}")
+        raise HTTPException(status_code=500, detail="There is an error, Couldn't fetch the recommendations")
+
 @app.get('/api/health')
 async def health_check(request: Request):
     return JSONResponse({"status": "OK"})
+
+def generate_secure_random_string(length=7):
+    """Generate a secure random string."""
+    import string
+    import secrets
+
+    char_set = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(secrets.choice(char_set) for _ in range(length))
 
 
 if __name__ == '__main__':
