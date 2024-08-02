@@ -7,7 +7,7 @@ import asyncio
 from .settings import DEBUG
 from typing import List, Optional
 from datetime import datetime, timezone
-from src.models import RepositoryRecommendation
+from src.models import RepositoryRecommendation, process_recommendations
 from src.oai import generate_embeddings
 from dotenv import load_dotenv
 load_dotenv()
@@ -16,8 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 async def recommend(user_details=None, 
-              languages_topics=None, 
-              topics=None, 
+              languages_topics=None,
+              _topics=None,
               max_recommendations=15) -> List[RepositoryRecommendation]:
     """Generate recommendations for users based on projects or topics."""
     
@@ -25,10 +25,51 @@ async def recommend(user_details=None,
     recommended_repos = set()
     collection = get_chromadb_collection()
 
-    if user_details:
-        lang_topics = languages_topics["languages"] + languages_topics["topics"]
+    # Get recommendations based on only language_topics if present, otherwise there is no point in collecting the preferred languages and topics
+    if languages_topics and (languages_topics['languages'] or languages_topics['topics']):
+        languages = languages_topics.get("languages", [])
+        topics = languages_topics.get("topics", [])
+
+        for i, lang in enumerate(languages):
+            new_doc = f"{lang} {topics[i]}" if i < len(topics) else lang
+            embeddings = generate_embeddings(new_doc)
+            try:
+                results = collection.query(
+                    query_embeddings=[embeddings],
+                    n_results=5,
+                    include=["metadatas", "distances"]
+                )
+            except DatabaseError as e:
+                logger.error(f"Error querying ChromaDB: {e}")
+                return recommendations
+
+            if results['metadatas'][0]:
+                metadatas = results["metadatas"][0]
+                for metadata in metadatas:
+                    repo_name = metadata.get("full_name")
+                    if '/' in repo_name:
+                        repo_url = f"https://github.com/{repo_name}"
+                        if repo_url not in recommended_repos:
+                            recommendations.append({
+                                "repo_url": repo_url,
+                                "full_name": metadata.get("full_name"),
+                                "description": metadata.get("description"),
+                                "stargazers_count": metadata.get("stargazers_count"),
+                                "forks_count": metadata.get("forks_count"),
+                                "open_issues_count": metadata.get("open_issues_count"),
+                                "avatar_url": metadata.get("avatar_url"),
+                                "language": metadata.get("language"),
+                                "updated_at": metadata.get("updated_at"),
+                                "topics": metadata.get("topics")
+                            })
+                            recommended_repos.add(repo_url)
+                    else:
+                        logger.info("No recommendations found for topics")
+    
+    # if the languages and topics are not present, we will recommend projects based on user's projects
+    if user_details and not (languages_topics['languages'] or languages_topics['topics']):
         for user_proj in user_details:
-            new_doc = f"{user_proj['project_name']} : {user_proj['description']} : {lang_topics}"
+            new_doc = f"{user_proj['project_name']} : {user_proj['description']}"
             embeddings = generate_embeddings(new_doc)
 
             results = collection.query(
@@ -37,14 +78,11 @@ async def recommend(user_details=None,
                 include=["metadatas", "distances"]
             )
 
-            print(f"UserProject: {user_proj} : language topics : {languages_topics}, Repositories: {results}")
             if results['metadatas'][0]:
                 metadatas = results["metadatas"][0]
 
                 for metadata in metadatas[:4]: # considering only the top 4 recommendations
                     repo_name = metadata.get("full_name")
-                    print('----------------\n Repo Name:', repo_name)
-                    print('\n------------------')
                     if '/' in repo_name:
                         repo_url = f"https://github.com/{repo_name}"
                         if repo_url not in recommended_repos:
@@ -66,20 +104,20 @@ async def recommend(user_details=None,
             else:
                 logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
-    if topics and not user_details:
-        logger.info(f"Querying ChromaDB for topics: {topics}")
-        embeddings = [generate_embeddings(topic) for topic in topics]
+    if _topics and not user_details:
+        logger.info(f"Querying ChromaDB for topics: {_topics}")
+        topics_doc = f"{_topics}"
+        embeddings = generate_embeddings(topics_doc)
 
         results = collection.query(
             query_embeddings=embeddings,
             n_results=8,  # Get more results to allow for filtering
-            include=["ids", "metadatas"]
+            include=["metadatas", "documents"]
         )
 
         logger.info(f"Recommendation results: {results}")
-        if results['documents'][0]:
+        if results['metadatas'][0]:
                 metadatas = results["metadatas"][0]
-
                 for metadata in metadatas:
                     repo_name = metadata.get("full_name")
                     if '/' in repo_name:
@@ -95,11 +133,9 @@ async def recommend(user_details=None,
                                 "avatar_url": metadata.get("avatar_url"),
                                 "language": metadata.get("language"),
                                 "updated_at": metadata.get("updated_at"),
-                                "topics": metadata.get("topics", [])
+                                "topics": metadata.get("topics")
                             })
                             recommended_repos.add(repo_url)
-                    if len(recommendations) >= max_recommendations:
-                        break
         else:
             logger.info(f"No recommendations found for project {user_proj['project_name']}")
 
@@ -133,6 +169,7 @@ def get_chromadb_collection():
             db_path = os.path.join(project_dir, "chroma")
             client = chromadb.PersistentClient(path=db_path)
         else:
+            # docker run -d -p 8000:8000 chromadb/chromadb
             client = chromadb.HttpClient(host=os.getenv('CHROMA_HOST'), port=8000)
             
         collection = client.get_or_create_collection(name="projects",
@@ -195,12 +232,13 @@ def upsert_to_chroma_db(collection, unique_repos):
     
     try:
         # Upsert data to the collection
-        collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=documents,
-            metadatas=metadatas
-        )
+        if ids:
+            collection.add(
+                ids=ids,
+                embeddings=embeddings,
+                documents=documents,
+                metadatas=metadatas
+            )
         
         print(f"Upserted {len(ids)} repositories to ChromaDB")
         return collection
@@ -235,17 +273,28 @@ async def main():
 ]
 
     languages_topics = {
-        'languages': ['Python', 'typescript'],
-        'topics': ['agentic-ai', 'openai', "GPT", "llm"]
+        'languages': ['c#'],
+        'topics': []
     }
     topics = ["docker", "kubernetes", "devops"]
     try:
-        recommendations = await recommend(user_details=user_details, languages_topics=languages_topics, topics=topics)
+        recommendations = await recommend(user_details=user_details, languages_topics=languages_topics)
         # logger.info(recommendations)
+
         print('--------')
-        print(recommendations)
+        print(len(recommendations))
+        print('--------')
+    #     for repo in recommendations:
+    #         print(repo)
+    #         print('--------\n')
     except Exception as e:
         print(f"Error Recommending data: {e}")
+
+    unique_recommendations = process_recommendations(recommendations, languages_topics)
+
+    for repo in unique_recommendations:
+        print(repo)
+        print('--------\n')
 
 if __name__ == "__main__":
     asyncio.run(main())
