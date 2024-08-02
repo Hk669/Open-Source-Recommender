@@ -85,40 +85,36 @@ const Input = ({ onSubmit }) => {
   };
 
   const handleLanguageInputChange = (e) => {
-    setLanguageInput(e.target.value);
+    const value = e.target.value;
+    setLanguageInput(value);
+
+    // Check for comma and update state
+    if (value.includes(",")) {
+      const newLanguages = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item && !languages.includes(item));
+      if (newLanguages.length > 0) {
+        setLanguages([...languages, ...newLanguages]);
+      }
+      setLanguageInput(""); // Clear input field after adding
+    }
   };
 
   const handleExtraTopicInputChange = (e) => {
-    setExtraTopicInput(e.target.value);
-  };
+    const value = e.target.value;
+    setExtraTopicInput(value);
 
-  const handleLanguageInputKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addLanguage();
-    }
-  };
-
-  const handleExtraTopicInputKeyDown = (e) => {
-    if (e.key === "Enter" || e.key === ",") {
-      e.preventDefault();
-      addExtraTopic();
-    }
-  };
-
-  const addLanguage = () => {
-    const trimmedInput = languageInput.trim();
-    if (trimmedInput && !languages.includes(trimmedInput)) {
-      setLanguages([...languages, trimmedInput]);
-      setLanguageInput("");
-    }
-  };
-
-  const addExtraTopic = () => {
-    const trimmedInput = extraTopicInput.trim();
-    if (trimmedInput && !extraTopics.includes(trimmedInput)) {
-      setExtraTopics([...extraTopics, trimmedInput]);
-      setExtraTopicInput("");
+    // Check for comma and update state
+    if (value.includes(",")) {
+      const newTopics = value
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item && !extraTopics.includes(item));
+      if (newTopics.length > 0) {
+        setExtraTopics([...extraTopics, ...newTopics]);
+      }
+      setExtraTopicInput(""); // Clear input field after adding
     }
   };
 
@@ -157,8 +153,7 @@ const Input = ({ onSubmit }) => {
           type="text"
           value={languageInput}
           onChange={handleLanguageInputChange}
-          onKeyDown={handleLanguageInputKeyDown}
-          placeholder="Type and press Enter to add"
+          placeholder="Type languages separated by commas"
         />
       </label>
       <label>
@@ -177,8 +172,7 @@ const Input = ({ onSubmit }) => {
           type="text"
           value={extraTopicInput}
           onChange={handleExtraTopicInputChange}
-          onKeyDown={handleExtraTopicInputKeyDown}
-          placeholder="Type and press Enter to add"
+          placeholder="Type topics separated by commas"
         />
       </label>
       <button type="submit" disabled={loading}>
