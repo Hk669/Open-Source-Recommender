@@ -42,13 +42,13 @@ class GithubUser(BaseModel):
     location: Optional[str] = None
     company: Optional[str] = None
     twitter_username: Optional[str] = None
-    followers: int
-    following: int
-    public_repos: int
-    public_gists: int
-    access_token: str
-    created_at: str
-    updated_at: str
+    followers: int = None
+    following: int = None
+    public_repos: int = None
+    public_gists: int = None
+    access_token: str = None
+    created_at: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    updated_at: str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     async def save(self):
         try:
@@ -69,7 +69,15 @@ class GithubUser(BaseModel):
         except Exception as e:
             logger.error(f"Failed to save user to DB: {str(e)}")
             raise ValueError("Failed to save user to DB")
-        
+
+def append_user_to_db(username):
+    try:
+        user = GithubUser(username=username)
+        user.save()
+
+    except Exception as e:
+        logger.error(f"Failed to save user to DB: {str(e)}")
+        raise ValueError("Failed to save user to DB")
 
 class RepositoryRecommendation(BaseModel):
     full_name: str

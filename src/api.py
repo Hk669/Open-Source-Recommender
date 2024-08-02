@@ -21,7 +21,7 @@ from src.models import (User,
                         get_user_collection, 
                         append_recommendations_to_db, get_user_previous_recommendations, 
                         get_user_recommendation_by_id, check_and_update_daily_limit,
-                        process_recommendations)
+                        process_recommendations, append_user_to_db)
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
@@ -293,12 +293,19 @@ async def get_recommendations_without_github(request: Request):
             logger.info(f"No recommendations found for user: {username}")
             return {'recommendations': [], 'message': 'No recommendations found'}
         
+        append_user_to_db(username)
         rec_name = f"Recommendations for {username} - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
         rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
         logger.info(f"Recommendations saved to DB with ID: {rec_id}")
+
+        return {
+            'recommendations': unique_recommendations[:20],
+            'recommendation_id': rec_id
+        }
+    
     except Exception as e:
         logger.info(f"There is an error: {e}")
-        raise HTTPException("There is an error, Couldn't fetch the recommendations")
+        raise HTTPException(status_code=500, detail="There is an error, Couldn't fetch the recommendations")
 
 @app.get('/api/health')
 async def health_check(request: Request):
