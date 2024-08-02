@@ -268,7 +268,7 @@ async def get_recommendation_by_id(recommendation_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get('/api/recommendations_without_github')
+@app.post('/api/recommendations_without_github')
 async def get_recommendations_without_github(request: Request):
     try:
         body = await request.json()
