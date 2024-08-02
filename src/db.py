@@ -27,8 +27,8 @@ async def recommend(user_details=None,
 
     # Get recommendations based on only language_topics if present, otherwise there is no point in collecting the preferred languages and topics
     if languages_topics and (languages_topics['languages'] or languages_topics['topics']):
-        languages = languages_topics["languages"]
-        topics = languages_topics["topics"]
+        languages = languages_topics.get("languages", [])
+        topics = languages_topics.get("topics", [])
 
         for i, lang in enumerate(languages):
             new_doc = f"{lang} {topics[i]}" if i < len(topics) else lang

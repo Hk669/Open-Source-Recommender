@@ -279,7 +279,7 @@ async def get_recommendations_without_github(request: Request):
         assert extra_topics or languages, "Extra topics or languages are required"
 
         username = username + generate_secure_random_string()
-        languages_topics = {"languages": languages, "extra_topics": extra_topics}
+        languages_topics = {"languages": languages, "topics": extra_topics} # this should be topics and not extra_topics
         urls = await recommend(languages_topics=languages_topics)
 
         if not urls:
