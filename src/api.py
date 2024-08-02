@@ -297,7 +297,8 @@ async def get_recommendations_without_github(request: Request):
         rec_id = append_recommendations_to_db(username, unique_recommendations, rec_name)
         logger.info(f"Recommendations saved to DB with ID: {rec_id}")
     except Exception as e:
-        print(e)
+        logger.info(f"There is an error: {e}")
+        raise HTTPException("There is an error, Couldn't fetch the recommendations")
 
 @app.get('/api/health')
 async def health_check(request: Request):
