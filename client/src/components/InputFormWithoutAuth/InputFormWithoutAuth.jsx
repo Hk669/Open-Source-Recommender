@@ -107,7 +107,7 @@ const InputWithoutAuth = ({ onSubmit }) => {
   return (
     <form onSubmit={handleSubmit}>
       <label>
-        Username:
+        Your Name:
         <input
           type="text"
           value={username}
