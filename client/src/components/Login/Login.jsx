@@ -3,12 +3,18 @@ import React from "react";
 import "./Login.css";
 import { FaGithub } from "react-icons/fa";
 import appImage from "../../assets/application.png";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = process.env.REACT_APP_API_URL;
 
 const Login = () => {
+  const navigate = useNavigate();
   const handleLogin = () => {
     window.location.href = `${API_URL}/github-login`;
+  };
+
+  const handleTryWithoutAuth = () => {
+    navigate("/try-recommender");
   };
 
   return (
@@ -22,10 +28,16 @@ const Login = () => {
       </p>
       <br></br>
 
-      <button className="github-login-button" onClick={handleLogin}>
-        <FaGithub className="github-icon" />
-        <span>Connect Your GitHub</span>
-      </button>
+      <div className="login-buttons">
+        <button className="github-login-button" onClick={handleLogin}>
+          <FaGithub className="github-icon" />
+          <span>Connect Your GitHub</span>
+        </button>
+
+        <button className="github-login-button" onClick={handleTryWithoutAuth}>
+          Try Without Github &rarr;
+        </button>
+      </div>
 
       <br></br>
       <div className="features-container">
@@ -34,8 +46,7 @@ const Login = () => {
           <ul>
             <li>
               <strong>Personalized Recommendations:</strong> Get matched with
-              the best open-source repositories based on your GitHub profile and
-              current projects.
+              the best open-source repositories based on your GitHub profile
             </li>
             <li>
               <strong>Optional Preferences:</strong> Customize your
@@ -58,7 +69,7 @@ const Login = () => {
           <h2>Why Choose Open Source Recommender?</h2>
           <ul>
             <li>
-              <strong>Relevancy:</strong> Ive seen goodfirstissues, but the
+              <strong>Relevancy:</strong> I've seen goodfirstissues, but the
               problem is that they are not always relevant to my skills and
               interests.
             </li>
@@ -110,7 +121,7 @@ const Login = () => {
           </ul>
         </div>
         <div className="image-container">
-          <img src={appImage} alt="Application"/>
+          <img src={appImage} alt="Application" />
         </div>
       </div>
     </div>
