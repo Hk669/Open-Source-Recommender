@@ -23,13 +23,14 @@ async def process_query(octokit, params):
     try:
         result = await search_repositories(octokit, params)
         await asyncio.sleep(2)  # Rate limiting
+        print('Found repos: ', len(result))
         return result
     except Exception as e:
         logger.info(f"Error searching with params {params}: {e}")
         return {}
 
 async def main(language_topics, access_token: str):
-    unique_repos = {}
+    # unique_repos = {}
 
     async with ClientSession() as session:
         if access_token:
@@ -44,12 +45,13 @@ async def main(language_topics, access_token: str):
 
         # Process languages sequentially
         for language in languages:
+            unique_repos = {}
             logger.info(f"Searching for {language} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 language:{language} pushed:>=2024-03-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 7,
+                'per_page': 15,
                 'page': 1,
             }
 
@@ -60,36 +62,43 @@ async def main(language_topics, access_token: str):
             good_first_issues_params = base_params.copy()
             good_first_issues_params['q'] += ' good-first-issues:>2'
             unique_repos.update(await process_query(octokit, good_first_issues_params))
+            update_db(unique_repos)
 
         # Process topics sequentially
         for topic in topics:
+            unique_repos = {}
             logger.info(f"Searching for {topic} repositories")
             base_params = {
                 'q': f'stars:>=2000 forks:>=500 topic:{topic} pushed:>2024-01-01',
                 'sort': 'stars',
                 'order': 'desc',
-                'per_page': 7,
+                'per_page': 15,
                 'page': 1,
             }
 
             help_wanted_params = base_params.copy()
             help_wanted_params['q'] += ' help-wanted-issues:>1'
             unique_repos.update(await process_query(octokit, help_wanted_params))
+            
 
             good_first_issues_params = base_params.copy()
             good_first_issues_params['q'] += ' good-first-issues:>1'
             unique_repos.update(await process_query(octokit, good_first_issues_params))
+            update_db(unique_repos)
 
     logger.info(f"Found {len(unique_repos)} unique repositories\n--------")
 
+    return unique_repos
+
+def update_db(unique_repos):
     chroma_db = get_chromadb_collection()
     try:
         logger.info("Upserting data to ChromaDB....")
         upsert_to_chroma_db(chroma_db, unique_repos)
     except Exception as e:
         raise Exception(f"Error upserting data to ChromaDB: {e}")
-    
-    return unique_repos
+
+
 
 if __name__ == "__main__":
     access_token = os.getenv("GPAT")
@@ -97,20 +106,20 @@ if __name__ == "__main__":
         "languages": [
             "python", "java", "javascript", "c++", "c#", "ruby", "php", "go", 
             "swift", "typescript", "jupyter-notebook", "bash", 
-            "c", "dart", 
+            "c", "dart", 'typescript', '.net',
             "elixir", "kotlin", "perl", "powershell", "r", "rust", 
             "scala", "shell"
         ],
-        "topics": ['ai', 'llms', 'ai-agents', 'agentic-ai', 'openai', 'artificial-intelligence', 'gpt', 
+        "topics": ['ai', 'llms', 'ai-agents', 'agentic-ai', 'openai', 'artificial-intelligence', 'gpt', 'huggingface', 'gpt', 'open-source',
                    'ai-assistant', 'machine-learning', 'transformers', 'chatbot', 'nlp', 'reinforcement-learning',
                    'docker', 'kubernetes', 'devops', 'cloud', 'aws', 'azure', 'gcp', 'serverless', 'terraform',
-                   'web', 'web-development', 'web-design', 'ui', 'html', 'css', 'react', 'angular',
+                   'web-development', 'web-design', 'ui', 'html', 'css', 'react', 'angular', 'vue',
                    'nodejs', 'nextjs', 'express', 'flask', 'django', 'rails', 'laravel', 'spring', 'spring-boot',
-                   'graphql', 'rest', 'api', 'microservices',
-                   'frontend', 'backend', 'fullstack', 'software',
-                   'devops', 'web3', 'blockchain', 'crypto', 'bitcoin', 'ethereum',
+                   'graphql', 'rest', 'api', 'microservices', "testing", "postgresql", 'kafka', 
+                   'frontend', 'backend', 'fullstack', 'software', "mongodb", "neo4j", "cassandra",
+                   'devops', 'web3', 'blockchain', 'bitcoin', 'ethereum', 'recommendation-engine',
                    'security', 'hacking', 'pentesting', 'privacy', 'encryption',
-                   'network', 'networking', 'internet-of-things', 'cloud', 'cloud-native', 'aws', 'azure', 'gcp']
+                   'cloud-computing', 'cloud', 'cloud-native']
     }
 
     start_time = datetime.now()
