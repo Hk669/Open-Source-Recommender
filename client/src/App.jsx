@@ -10,7 +10,8 @@ import Login from "./components/Login/Login";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Routes, Route } from "react-router-dom";
 import GithubCallback from "./components/GithubCallback";
-import PreviousRecommendations from "./components/PreviousRecomendations/PreviousRecommendations";
+import PreviousRecommendations from "./components/PreviousRecommendations/PreviousRecommendations";
+import AppWithoutAuth from "./AppWithouthAuth";
 
 function App() {
   const [recommendations, setRecommendations] = useState([]);
@@ -40,6 +41,7 @@ function App() {
             const data = await response.json();
             setIsAuthenticated(true);
             setUserData(data);
+            localStorage.setItem("username", data.username);
             if (location.pathname === "/") navigate("/recommender");
           } else {
             localStorage.removeItem("jwt_token");
@@ -57,9 +59,10 @@ function App() {
 
   const handleLogout = () => {
     localStorage.removeItem("jwt_token");
+    localStorage.removeItem("username");
     setIsAuthenticated(false);
     setUserData(null);
-    navigate("/login");
+    navigate("/");
   };
 
   const handleSubmit = async (inputData) => {
@@ -100,6 +103,7 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/auth-callback" element={<GithubCallback />} />
+          <Route path="/try-recommender" element={<AppWithoutAuth />} />
           <Route
             path="/recommender"
             element={
