@@ -22,22 +22,23 @@ from src.models import (User,
                         append_recommendations_to_db, get_user_previous_recommendations, 
                         get_user_recommendation_by_id, check_and_update_daily_limit,
                         process_recommendations, append_user_to_db)
+from redis import Redis
 
 # load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
 
-# console_handler = logging.StreamHandler(sys.stdout)
-# console_handler.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.DEBUG)
 
 # # Create a detailed log format
-# log_format = logging.Formatter(
-#     '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
-# )
+log_format = logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s'
+)
 
-# # Set the format for handlers
-# console_handler.setFormatter(log_format)
-# logger.addHandler(console_handler)
+# Set the format for handlers
+console_handler.setFormatter(log_format)
+logger.addHandler(console_handler)
 
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -55,12 +56,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://gitmatch.in"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+app.state.redis = Redis(host="localhost", port=6379)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
@@ -188,16 +189,6 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         extra_topics = body.get("extra_topics", [])
         languages = body.get("languages", [])
 
-        # limit_updated = await check_and_update_daily_limit(username)
-        
-        # if not limit_updated:
-        #     logger.warning(f"Daily limit exceeded for user: {username}")
-        #     return {
-        #         "success": False,
-        #         "message": "Reached your daily limit",
-        #         "recommendations": []
-        #     }
-
         urls = []
         user = User(username=current_user["username"], access_token=current_user["access_token"],extra_topics=extra_topics, languages=languages)
 
@@ -239,6 +230,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while generating recommendations")
 
+import json
 
 @app.get('/api/user-recommendations')
 async def get_user_recommendations(username: str = Query(...), current_user: dict = Depends(get_current_user)):
@@ -246,22 +238,44 @@ async def get_user_recommendations(username: str = Query(...), current_user: dic
         if username != current_user["username"]:
             raise HTTPException(status_code=403, detail="Unauthorized access")
 
+        recommendations = app.state.redis.get(f"user_recommendations:{username}")
+        if recommendations:
+            try:
+                recommendations_json = json.loads(recommendations)
+                return recommendations_json
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error: {str(e)}")
+                raise HTTPException(status_code=500, detail="Error decoding JSON from Redis")
+        
+        # Handle case where no data is found
         user_recommendations = await get_user_previous_recommendations(username)
         if not user_recommendations:
             raise HTTPException(status_code=404, detail="No recommendations found for user")
+        
+        # Cache the recommendations
+        app.state.redis.set(f"user_recommendations:{username}", json.dumps(user_recommendations))
         return user_recommendations
+        
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while fetching user recommendations")
 
 
+
 @app.get("/api/recommendation/{recommendation_id}")
 async def get_recommendation_by_id(recommendation_id: str):
     try:
-        recommendation = await get_user_recommendation_by_id(recommendation_id)
+        recommendation = app.state.redis.get(f"recommendation:{recommendation_id}")
+        if recommendation:
+            rec = json.loads(recommendation)
+            return rec
+        
         if not recommendation:
-            raise HTTPException(status_code=404, detail="Recommendation not found")
-        return recommendation
+            recommendation = await get_user_recommendation_by_id(recommendation_id)
+            if not recommendation:
+                raise HTTPException(status_code=404, detail="Recommendation not found")
+            app.state.redis.set(f"recommendation:{recommendation_id}", json.dumps(recommendation))
+            return recommendation
     except Exception as e:
         logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
