@@ -158,7 +158,7 @@ async def get_topic_based_recommendations(user):
     
     if not urls:
         return {'recommendations': [], 'message': 'No recommendations found for the given topics'}
-    return {'recommendations': urls}
+    return urls
     
 
 
