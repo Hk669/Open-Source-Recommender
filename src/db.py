@@ -30,41 +30,42 @@ async def recommend(user_details=None,
         languages = languages_topics.get("languages", [])
         topics = languages_topics.get("topics", [])
 
-        for i, lang in enumerate(languages):
-            new_doc = f"{lang} {topics[i]}" if i < len(topics) else lang
-            embeddings = generate_embeddings(new_doc)
-            try:
-                results = collection.query(
-                    query_embeddings=[embeddings],
-                    n_results=5,
-                    include=["metadatas", "distances"]
-                )
-            except DatabaseError as e:
-                logger.error(f"Error querying ChromaDB: {e}")
-                return recommendations
+        for lang in languages:
+            for topic in topics:
+                new_doc = f"{lang} {topic}".strip()
+                embeddings = generate_embeddings(new_doc)
+                try:
+                    results = collection.query(
+                        query_embeddings=[embeddings],
+                        n_results=5,
+                        include=["metadatas", "distances"]
+                    )
+                except DatabaseError as e:
+                    logger.error(f"Error querying ChromaDB: {e}")
+                    return recommendations
 
-            if results['metadatas'][0]:
-                metadatas = results["metadatas"][0]
-                for metadata in metadatas:
-                    repo_name = metadata.get("full_name")
-                    if '/' in repo_name:
-                        repo_url = f"https://github.com/{repo_name}"
-                        if repo_url not in recommended_repos:
-                            recommendations.append({
-                                "repo_url": repo_url,
-                                "full_name": metadata.get("full_name"),
-                                "description": metadata.get("description"),
-                                "stargazers_count": metadata.get("stargazers_count"),
-                                "forks_count": metadata.get("forks_count"),
-                                "open_issues_count": metadata.get("open_issues_count"),
-                                "avatar_url": metadata.get("avatar_url"),
-                                "language": metadata.get("language"),
-                                "updated_at": metadata.get("updated_at"),
-                                "topics": metadata.get("topics")
-                            })
-                            recommended_repos.add(repo_url)
-                    else:
-                        logger.info("No recommendations found for topics")
+                if results['metadatas'][0]:
+                    metadatas = results["metadatas"][0]
+                    for metadata in metadatas:
+                        repo_name = metadata.get("full_name")
+                        if '/' in repo_name:
+                            repo_url = f"https://github.com/{repo_name}"
+                            if repo_url not in recommended_repos:
+                                recommendations.append({
+                                    "repo_url": repo_url,
+                                    "full_name": metadata.get("full_name"),
+                                    "description": metadata.get("description"),
+                                    "stargazers_count": metadata.get("stargazers_count"),
+                                    "forks_count": metadata.get("forks_count"),
+                                    "open_issues_count": metadata.get("open_issues_count"),
+                                    "avatar_url": metadata.get("avatar_url"),
+                                    "language": metadata.get("language"),
+                                    "updated_at": metadata.get("updated_at"),
+                                    "topics": metadata.get("topics")
+                                })
+                                recommended_repos.add(repo_url)
+                        else:
+                            logger.info("No recommendations found for topics")
     
     # if the languages and topics are not present, we will recommend projects based on user's projects
     if user_details and not (languages_topics['languages'] or languages_topics['topics']):
@@ -150,7 +151,7 @@ async def get_topic_based_recommendations(user):
     
     # Get recommendations based on topics
     try:
-        urls = await recommend(topics=all_topics)
+        urls = await recommend(languages_topics=all_topics)
     except Exception as e:
         logger.error(f"Error generating topic-based recommendations: {str(e)}")
         return {'recommendations': [], 'message': 'Error generating recommendations'}

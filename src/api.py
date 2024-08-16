@@ -219,8 +219,8 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
             logger.info("No recommendations found")
             return {'recommendations': [], 'message': 'No recommendations found, please mention more topics or languages'}
         
-        unique_recommendations = process_recommendations(urls, languages_topics)
-
+        # unique_recommendations = process_recommendations(urls, languages_topics)
+        unique_recommendations = urls
         if not unique_recommendations:
             logger.info(f"No recommendations found for user: {username}")
             return {'recommendations': [], 'message': 'No recommendations found'}
@@ -232,7 +232,7 @@ async def get_recommendations(request: Request, current_user: dict = Depends(get
 
         # update_daily_limit(username) # updates the daily limit of the user.
         return {
-            'recommendations': unique_recommendations[:20],
+            'recommendations': unique_recommendations,
             'recommendation_id': rec_id
         }
     except Exception as e:
