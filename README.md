@@ -1,8 +1,7 @@
 
 # Open-Source Recommender
 
-
-https://github.com/user-attachments/assets/c4e093ea-2256-4f25-8eeb-2de0e6fc67d8
+https://github.com/user-attachments/assets/fc2f9fbe-682e-406d-8c7b-d9f192889a4f
 
 
 This will be a free public-facing web application designed to find open-source projects for beginners and developers available at [gitmatch.in](https://gitmatch.in).
